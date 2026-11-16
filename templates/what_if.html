@@ -1,0 +1,393 @@
+<!-- Unified What-If Planner -->
+<div class="what-if-page">
+
+    {% if not is_portal_session_active and attendance.subjects %}
+    <div class="session-expired-notice" style="background:#fffbeb; border:1px solid #fef3c7; border-radius:12px; padding:12px 16px; margin: 0 0 16px 0; display:flex; align-items:center; gap:10px;">
+        <span style="font-size:18px;">ℹ️</span>
+        <div style="font-size:13px; color:#92400e; line-height:1.4;">
+            <strong>Using saved attendance:</strong> Your live portal session timed out, so this simulation is using your last saved attendance data.
+        </div>
+    </div>
+    {% endif %}
+
+    {% if not scenario %}
+
+    <div class="summary unified-planner-intro">
+        <div class="what-if-header-title-row">
+            <div>
+                <span class="what-if-kicker">SIMULATION</span>
+                <h2>Plan your attendance</h2>
+            </div>
+            <button type="button" class="attendance-sync-btn" id="attendance-sync-btn-what-if" onclick="refreshLiveAttendance()" title="Sync live attendance with NIET ERP">
+                <span class="sync-icon">🔄</span>
+                <span class="sync-label">Sync Live</span>
+            </button>
+        </div>
+    </div>
+
+    <div class="what-if-unified-planner" id="unified-planner">
+
+        <div class="unified-planner-step">
+            <div class="step-label-row">
+                <span class="what-if-kicker">1 · PLAN</span>
+                <span class="step-subtitle">What would you like to calculate?</span>
+            </div>
+
+            <div class="unified-choice-grid" role="group" aria-label="What are you planning?">
+                <button type="button" class="unified-choice active" data-plan-action="attend"
+                        onclick="selectUnifiedAction('attend')">
+                    <div class="choice-top">
+                        <span class="choice-indicator"></span>
+                        <span class="choice-tag">Gain</span>
+                    </div>
+                    <div class="choice-visual-row">
+                        <img src="/static/characters/mascot_present.webp" alt="Attend Mascot" class="choice-mascot-sticker float-anim">
+                        <div class="choice-label-col">
+                            <strong>Attend</strong>
+                            <small>Simulate classes you attend</small>
+                        </div>
+                    </div>
+                </button>
+
+                <button type="button" class="unified-choice" data-plan-action="skip"
+                        onclick="selectUnifiedAction('skip')">
+                    <div class="choice-top">
+                        <span class="choice-indicator"></span>
+                        <span class="choice-tag">Impact</span>
+                    </div>
+                    <div class="choice-visual-row">
+                        <img src="/static/characters/mascot_absent.webp" alt="Skip Mascot" class="choice-mascot-sticker bob-anim">
+                        <div class="choice-label-col">
+                            <strong>Skip</strong>
+                            <small>Simulate missed or bunked classes</small>
+                        </div>
+                    </div>
+                </button>
+
+                <button type="button" class="unified-choice" data-plan-action="target"
+                        onclick="selectUnifiedAction('target')">
+                    <div class="choice-top">
+                        <span class="choice-indicator"></span>
+                        <span class="choice-tag">Goal</span>
+                    </div>
+                    <div class="choice-visual-row">
+                        <img src="/static/characters/mascot_target.webp" alt="Target Mascot" class="choice-mascot-sticker pulse-anim">
+                        <div class="choice-label-col">
+                            <strong>Reach a target</strong>
+                            <small>Classes needed to hit 75% or 80%</small>
+                        </div>
+                    </div>
+                </button>
+
+                <button type="button" class="unified-choice" data-plan-action="safe-leaves"
+                        onclick="selectUnifiedAction('safe-leaves')">
+                    <div class="choice-top">
+                        <span class="choice-indicator"></span>
+                        <span class="choice-tag">Margin</span>
+                    </div>
+                    <div class="choice-visual-row">
+                        <img src="/static/characters/mascot_safe.webp" alt="Safe Leaves Mascot" class="choice-mascot-sticker chill-anim">
+                        <div class="choice-label-col">
+                            <strong>Safe leaves</strong>
+                            <small>Maximum classes you can skip safely</small>
+                        </div>
+                    </div>
+                </button>
+            </div>
+        </div>
+
+        <div class="unified-planner-step" id="unified-horizon-step">
+            <div class="step-label-row">
+                <span class="what-if-kicker">2 · UNTIL</span>
+                <span class="step-subtitle">Choose your time horizon</span>
+            </div>
+
+            <div class="unified-choice-grid unified-horizon-grid" role="group" aria-label="Planning horizon">
+                <button type="button" class="unified-choice active" data-plan-horizon="today"
+                        onclick="selectUnifiedHorizon('today')">
+                    <div class="choice-top">
+                        <span class="choice-indicator"></span>
+                        <span class="choice-tag">Immediate</span>
+                    </div>
+                    <strong>Today</strong>
+                    <small>Plan today's remaining lectures</small>
+                </button>
+
+                <button type="button" class="unified-choice" data-plan-horizon="sessional"
+                        onclick="selectUnifiedHorizon('sessional')">
+                    <div class="choice-top">
+                        <span class="choice-indicator"></span>
+                        <span class="choice-tag">Checkpoint</span>
+                    </div>
+                    <strong>Sessional</strong>
+                    <small>Pre-exam attendance margin</small>
+                </button>
+
+                <button type="button" class="unified-choice" data-plan-horizon="until-date"
+                        onclick="selectUnifiedHorizon('until-date')">
+                    <div class="choice-top">
+                        <span class="choice-indicator"></span>
+                        <span class="choice-tag">Calendar</span>
+                    </div>
+                    <strong>Choose a date</strong>
+                    <small>Interactive daily calendar planner</small>
+                </button>
+            </div>
+        </div>
+
+        <div class="unified-planner-step unified-target-preview" id="unified-target-step" hidden>
+            <span class="what-if-kicker">2 · TARGET</span>
+            <p></p>
+        </div>
+
+        <div class="unified-planner-footer">
+            <div>
+                <span>Planning only</span>
+                <small>Your actual attendance will not change.</small>
+            </div>
+            <button type="button" class="attendance-button" onclick="startUnifiedPlanner()">Continue</button>
+        </div>
+
+    </div>
+
+    <script>
+    (function () {
+        window.unifiedPlannerState = {
+            action: "attend",
+            horizon: "today"
+        };
+
+        window.selectUnifiedAction = function (action) {
+            window.unifiedPlannerState.action = action;
+
+            document.querySelectorAll("[data-plan-action]").forEach(function (button) {
+                button.classList.toggle("active", button.dataset.planAction === action);
+            });
+
+            const horizonStep = document.getElementById("unified-horizon-step");
+            const targetStep = document.getElementById("unified-target-step");
+
+            if (action === "target" || action === "safe-leaves") {
+                horizonStep.hidden = true;
+                targetStep.hidden = false;
+                targetStep.querySelector(".what-if-kicker").textContent =
+                    action === "safe-leaves" ? "2 · SAFE LEAVES" : "2 · TARGET";
+                targetStep.querySelector("p").textContent =
+                    action === "safe-leaves"
+                        ? "Set your minimum attendance and calculate your safe leaves."
+                        : "Set your target attendance and find the classes you need.";
+            } else {
+                horizonStep.hidden = false;
+                targetStep.hidden = true;
+            }
+
+            const activeNextStep = (action === "target" || action === "safe-leaves") ? targetStep : horizonStep;
+            const footer = document.querySelector(".unified-planner-footer");
+            setTimeout(function () {
+                if (typeof scrollElementIntoComfortableView === "function") {
+                    scrollElementIntoComfortableView(footer || activeNextStep);
+                } else if (footer) {
+                    footer.scrollIntoView({ behavior: "smooth", block: "center" });
+                }
+            }, 100);
+        };
+
+        window.selectUnifiedHorizon = function (horizon) {
+            window.unifiedPlannerState.horizon = horizon;
+
+            document.querySelectorAll("[data-plan-horizon]").forEach(function (button) {
+                button.classList.toggle("active", button.dataset.planHorizon === horizon);
+            });
+
+            const footer = document.querySelector(".unified-planner-footer");
+            setTimeout(function () {
+                if (typeof scrollElementIntoComfortableView === "function") {
+                    scrollElementIntoComfortableView(footer);
+                } else if (footer) {
+                    footer.scrollIntoView({ behavior: "smooth", block: "center" });
+                }
+            }, 80);
+        };
+
+        window.startUnifiedPlanner = function () {
+            const state = window.unifiedPlannerState;
+
+            if (state.action === "target") {
+                window.location.href = "/what-if?scenario=target";
+                return;
+            }
+
+            if (state.action === "safe-leaves") {
+                window.location.href = "/what-if?scenario=safe-leaves";
+                return;
+            }
+
+            window.location.href = "/what-if?scenario=" + encodeURIComponent(state.horizon);
+        };
+    })();
+    </script>
+
+    {% else %}
+
+    <div class="what-if-top-bar">
+        <a href="/what-if" class="what-if-back-btn" title="Back to main planner menu">← Menu</a>
+        <div class="what-if-scenario-tabs" role="tablist" aria-label="Scenario switcher">
+            <a href="/what-if?scenario=today" class="what-if-tab-pill {% if scenario == 'today' %}active{% endif %}">
+                <span>⚡</span> Today
+            </a>
+            <a href="/what-if?scenario=target" class="what-if-tab-pill {% if scenario == 'target' %}active{% endif %}">
+                <span>🎯</span> Target %
+            </a>
+            <a href="/what-if?scenario=safe-leaves" class="what-if-tab-pill {% if scenario == 'safe-leaves' %}active{% endif %}">
+                <span>🛡️</span> Safe Leaves
+            </a>
+            <a href="/what-if?scenario=sessional" class="what-if-tab-pill {% if scenario == 'sessional' %}active{% endif %}">
+                <span>🏁</span> Sessional
+            </a>
+            <a href="/what-if?scenario=until-date" class="what-if-tab-pill {% if scenario == 'until-date' %}active{% endif %}">
+                <span>📆</span> Calendar
+            </a>
+        </div>
+    </div>
+
+    {% if scenario == "today" %}
+
+    <div class="what-if-scenario-box" id="what-if-planner-section">
+        <div class="what-if-scenario-heading">
+            <div>
+                <span class="what-if-kicker">IMMEDIATE</span>
+                <h2>Today's Lectures</h2>
+            </div>
+            <div class="scenario-heading-actions">
+                <button type="button" class="attendance-sync-btn" onclick="refreshLiveAttendance()" title="Sync live attendance with NIET ERP">
+                    <span class="sync-icon">🔄</span>
+                    <span class="sync-label">Sync Live</span>
+                </button>
+                <a href="/scenario/reset?scenario=today" class="scenario-reset-btn" title="Reset today's calculation">
+                    <span class="reset-icon">↺</span>
+                    <span class="reset-text">Reset</span>
+                </a>
+            </div>
+        </div>
+
+        {% if not planner_loaded %}
+        <div class="summary">
+            <h3>Load today's classes</h3>
+            <p>TEIN needs today's attendance before it can calculate your plan.</p>
+            <form action="/load-planner" method="POST" onsubmit="showLoading()">
+                <input type="hidden" name="next" value="/what-if?scenario=today">
+                <button type="submit" class="attendance-button">Load attendance</button>
+            </form>
+        </div>
+        {% elif not session.get("planner_event_checked", False) %}
+        {% set today_context_return_to = "/what-if?scenario=today" %}
+        {% include "_today_context.html" %}
+        {% else %}
+        {% include "scenario_today.html" %}
+        {% endif %}
+    </div>
+
+    {% elif scenario == "sessional" %}
+
+    <div class="what-if-scenario-box" id="what-if-planner-section">
+        <div class="what-if-scenario-heading">
+            <div>
+                <span class="what-if-kicker">CHECKPOINT</span>
+                <h2>Sessional Checkpoints</h2>
+            </div>
+            <div class="scenario-heading-actions">
+                <button type="button" class="attendance-sync-btn" onclick="refreshLiveAttendance()" title="Sync live attendance with NIET ERP">
+                    <span class="sync-icon">🔄</span>
+                    <span class="sync-label">Sync Live</span>
+                </button>
+                <a href="/scenario/reset?scenario=sessional" class="scenario-reset-btn" title="Reset sessional checkpoints">
+                    <span class="reset-icon">↺</span>
+                    <span class="reset-text">Reset</span>
+                </a>
+            </div>
+        </div>
+
+        {% if not planner_loaded %}
+        <div class="summary">
+            <h3>Load today's classes</h3>
+            <p>TEIN needs today's attendance before checkpoint planning can begin.</p>
+            <form action="/load-planner" method="POST" onsubmit="showLoading()">
+                <input type="hidden" name="next" value="/what-if?scenario=sessional">
+                <button type="submit" class="attendance-button">Load attendance</button>
+            </form>
+        </div>
+        {% elif not session.get("planner_event_checked", False) %}
+        {% set today_context_return_to = "/what-if?scenario=sessional" %}
+        {% include "_today_context.html" %}
+        {% elif planner_target_required %}
+        <div class="summary">
+            <h3>Set your attendance requirement</h3>
+            <p>This minimum will be used for all sessional checkpoints.</p>
+            <form action="/planner-target" method="POST">
+                <input type="hidden" name="return_to" value="/what-if?scenario=sessional">
+                <label for="what_if_target_attendance">Required attendance</label>
+                <div class="target-input-row">
+                    <input type="number" id="what_if_target_attendance" name="target_attendance"
+                           min="1" max="100" step="1" value="75" required autofocus>
+                    <span>%</span>
+                </div>
+                <button type="submit" class="attendance-button">Continue</button>
+            </form>
+        </div>
+        {% else %}
+        {% include "sessional_scenario.html" %}
+        {% endif %}
+    </div>
+
+    {% elif scenario in ["until-date", "target", "safe-leaves"] %}
+
+    <div class="what-if-scenario-box" id="what-if-planner-section">
+        <div class="what-if-scenario-heading">
+            <div>
+                <span class="what-if-kicker">
+                    {% if scenario == "until-date" %}CALENDAR{% elif scenario == "target" %}GOAL{% else %}MARGIN{% endif %}
+                </span>
+                <h2>
+                    {% if scenario == "until-date" %}
+                    Plan Between Dates
+                    {% elif scenario == "target" %}
+                    Reach a Target
+                    {% else %}
+                    Safe Leaves
+                    {% endif %}
+                </h2>
+            </div>
+            <div class="scenario-heading-actions">
+                <button type="button" class="attendance-sync-btn" onclick="refreshLiveAttendance()" title="Sync live attendance with NIET ERP">
+                    <span class="sync-icon">🔄</span>
+                    <span class="sync-label">Sync Live</span>
+                </button>
+                <a href="/scenario/reset?scenario={{ scenario }}" class="scenario-reset-btn" title="Reset this calculation">
+                    <span class="reset-icon">↺</span>
+                    <span class="reset-text">Reset</span>
+                </a>
+            </div>
+        </div>
+
+        {% if not planner_loaded %}
+        <div class="summary">
+            <h3>Load today's classes</h3>
+            <p>TEIN needs today's attendance before planning can begin.</p>
+            <form action="/load-planner" method="POST" onsubmit="showLoading()">
+                <input type="hidden" name="next" value="/what-if?scenario={{ scenario }}">
+                <button type="submit" class="attendance-button">Load attendance</button>
+            </form>
+        </div>
+        {% elif not session.get("planner_event_checked", False) %}
+        {% set today_context_return_to = "/what-if?scenario=" ~ scenario %}
+        {% include "_today_context.html" %}
+        {% else %}
+        {% include "scenario_extra.html" %}
+        {% endif %}
+    </div>
+
+    {% endif %}
+
+    {% endif %}
+
+</div>

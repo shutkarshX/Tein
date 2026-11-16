@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TEIN - Submit Event</title>
+    <!-- PWA & Mobile Meta -->
+    <meta name="theme-color" content="#f59e0b">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <link rel="manifest" href="/manifest.json">
+
+    <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='favicon.svg') }}">
+    <link rel="alternate icon" type="image/png" href="{{ url_for('static', filename='icon-192.png') }}">
+    <link rel="apple-touch-icon" href="{{ url_for('static', filename='apple-touch-icon.png') }}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400&family=Plus+Jakarta+Sans:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}?v=6.3">
+    <link rel="stylesheet" href="{{ url_for('static', filename='mobile.css') }}?v=1.7">
+</head>
+<body>
+<div class="container">
+    <header class="dashboard-header"><div><h1>TEIN</h1><p>Submit an event</p></div></header>
+    <nav class="page-nav" aria-label="Main navigation">
+        <a href="/">Home</a><a href="/what-if">What-If</a><a href="/subjects">Subject Attendance</a><a href="/clubs">Clubs</a><a href="/events" class="active">Events</a>
+    </nav>
+
+    {% if submitted %}
+    <section class="event-success">
+        <span class="clubs-kicker">SUBMITTED · PENDING REVIEW</span>
+        <div class="event-success-icon">✓</div>
+        <h2>Event received.</h2>
+        <p>Your report has been saved for verification. It won't appear in the public feed until it is checked.</p>
+        <strong>Submission #{{ submission_id }}</strong>
+        <a href="/events">← Back to events</a>
+    </section>
+    {% else %}
+    <section class="summary event-form-intro">
+        <a class="event-back" href="/events">← Events</a>
+        <span class="clubs-kicker">SUBMISSION</span>
+        <h2>Submit an Event</h2>
+    </section>
+
+    {% if error %}<div class="event-form-error">{{ error }}</div>{% endif %}
+
+    <form class="event-form" method="post">
+        <div class="event-form-section"><span>01</span><div><h3>Event details</h3></div></div>
+        <div class="event-form-grid">
+            <label class="event-field event-field-wide">Event title<input name="title" required placeholder="e.g. Hackathon 2026" value="{{ form.get('title', '') }}"></label>
+            <label class="event-field">Club / organiser<input name="club" placeholder="e.g. GDSC" value="{{ form.get('club', '') }}"></label>
+            <label class="event-field">Date<input type="date" name="date" required value="{{ form.get('date', '') }}"></label>
+            <label class="event-field">Time<input type="text" name="time" placeholder="10:00 AM – 1:00 PM" value="{{ form.get('time', '') }}"></label>
+            <label class="event-field">Venue<input name="venue" placeholder="Main Auditorium" value="{{ form.get('venue', '') }}"></label>
+            <label class="event-field event-field-wide">Description<textarea name="description" rows="4" placeholder="What should students know?">{{ form.get('description', '') }}</textarea></label>
+            <label class="event-field event-field-wide">Registration link<input type="url" name="registration_link" placeholder="https://..." value="{{ form.get('registration_link', '') }}"></label>
+        </div>
+
+        <div class="event-form-section"><span>02</span><div><h3>Source & verification</h3></div></div>
+        <div class="event-form-grid">
+            <label class="event-field event-field-wide">Source<select name="source_type" required>
+                <option value="">Choose a source</option><option value="instagram">Instagram</option><option value="whatsapp">WhatsApp</option><option value="telegram">Telegram</option><option value="poster">Poster / PDF</option><option value="word_of_mouth">Word of mouth</option><option value="club_submission">Club submission</option><option value="student_submission">Student submission</option><option value="department_submission">Department submission</option>
+            </select></label>
+            <label class="event-field event-field-wide">Source link / reference<input name="source_reference" placeholder="Public post/link or short description" value="{{ form.get('source_reference', '') }}"></label>
+            <label class="event-field">Proof reference<input name="proof_reference" placeholder="Poster or screenshot reference" value="{{ form.get('proof_reference', '') }}"></label>
+            <label class="event-field">Your name / identifier<input name="submitted_by" placeholder="Optional" value="{{ form.get('submitted_by', '') }}"></label>
+        </div>
+        <div class="event-form-footer"><span>Your submission stays private until reviewed.</span><button type="submit">Submit for verification <span>→</span></button></div>
+    </form>
+    {% endif %}
+</div>
+
+<nav class="mobile-bottom-nav" aria-label="Mobile navigation">
+    <a href="/" class="mobile-nav-link">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        <span>Home</span>
+    </a>
+    <a href="/what-if" class="mobile-nav-link">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+        <span>What-If</span>
+    </a>
+    <a href="/subjects" class="mobile-nav-link">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z"/><path d="M6 6h10M6 10h10"/></svg>
+        <span>Subjects</span>
+    </a>
+    <a href="/clubs" class="mobile-nav-link">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        <span>Clubs</span>
+    </a>
+    <a href="/events" class="mobile-nav-link active">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+        <span>Events</span>
+    </a>
+</nav>
+<script>
+if ("serviceWorker" in navigator) {
+    window.addEventListener("load", function() {
+        navigator.serviceWorker.register("/sw.js", { scope: "/" }).catch(function() {});
+    });
+}
+</script>
+</body>
+</html>

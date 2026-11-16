@@ -1,0 +1,1701 @@
+/* ==========================================================================
+   TEIN — Mobile & Phone Stylesheet (`mobile.css`)
+   Dedicated, high-performance styling for Android & iOS phones.
+   Single source of truth for all phone viewports (<= 768px).
+   ========================================================================== */
+
+@media screen and (max-width: 768px) {
+
+    /* ----------------------------------------------------------------------
+       1. SYSTEM, VIEWPORT & TOUCH RESILIENCE (iOS Safari & Android Chrome)
+       ---------------------------------------------------------------------- */
+
+    /* Stop iOS Safari automatic viewport zoom-in by enforcing minimum 16px font size */
+    input[type="text"],
+    input[type="password"],
+    input[type="email"],
+    input[type="number"],
+    input[type="date"],
+    input[type="search"],
+    select,
+    textarea,
+    .email-field-shell input,
+    .password-field-shell input,
+    .tein-modal-input,
+    .tein-modal-input-readonly {
+        font-size: 16px !important;
+        line-height: 1.35 !important;
+    }
+
+    /* Hardware accelerated momentum scrolling and clean touch behavior */
+    * {
+        -webkit-tap-highlight-color: transparent;
+    }
+
+    html, body {
+        overflow-x: hidden !important;
+        width: 100% !important;
+        max-width: 100vw !important;
+        touch-action: manipulation;
+    }
+
+    /* Body padding ensuring bottom navigation bar never cuts off page content */
+    body {
+        padding-bottom: calc(84px + env(safe-area-inset-bottom, 0px)) !important;
+    }
+
+    /* Container fluid padding on phones */
+    .container {
+        padding-left: 12px !important;
+        padding-right: 12px !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
+        max-width: 100vw !important;
+        overflow-x: hidden !important;
+    }
+
+    /* ----------------------------------------------------------------------
+       2. MOBILE BOTTOM NAVIGATION & iPHONE HOME-BAR SAFE AREA
+       ---------------------------------------------------------------------- */
+    .mobile-bottom-nav {
+        position: fixed !important;
+        bottom: 0 !important;
+        left: 0 !important;
+        right: 0 !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
+        height: calc(62px + env(safe-area-inset-bottom, 0px)) !important;
+        padding-top: 6px !important;
+        padding-bottom: calc(6px + env(safe-area-inset-bottom, 0px)) !important;
+        padding-left: 8px !important;
+        padding-right: 8px !important;
+        background: rgba(255, 255, 255, 0.94) !important;
+        backdrop-filter: blur(20px) saturate(180%) !important;
+        -webkit-backdrop-filter: blur(20px) saturate(180%) !important;
+        border-top: 1px solid rgba(226, 220, 210, 0.85) !important;
+        box-shadow: 0 -4px 20px rgba(60, 50, 40, 0.06) !important;
+        z-index: 9999 !important;
+        display: flex !important;
+        justify-content: space-around !important;
+        align-items: center !important;
+    }
+
+    .mobile-nav-link {
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: center !important;
+        justify-content: center !important;
+        gap: 3px !important;
+        color: #78716c !important;
+        text-decoration: none !important;
+        font-size: 11px !important;
+        font-weight: 600 !important;
+        padding: 6px 12px !important;
+        border-radius: 12px !important;
+        transition: color 0.15s ease, background 0.15s ease !important;
+        min-height: 44px !important; /* Apple Human Interface Guideline minimum tap target */
+        flex: 1 !important;
+    }
+
+    .mobile-nav-link.active {
+        color: #b45309 !important;
+        background: rgba(254, 243, 199, 0.6) !important;
+    }
+
+    .mobile-nav-link svg {
+        stroke: currentColor !important;
+        width: 22px !important;
+        height: 22px !important;
+    }
+
+    /* ----------------------------------------------------------------------
+       3. TOP HEADER & SYNC BAR
+       ---------------------------------------------------------------------- */
+    .summary-header-row {
+        display: flex !important;
+        flex-direction: row !important;
+        align-items: center !important;
+        justify-content: space-between !important;
+        gap: 8px !important;
+        margin-bottom: 12px !important;
+        flex-wrap: wrap !important;
+    }
+
+    .summary-header-row h2 {
+        font-size: 18px !important;
+        font-weight: 700 !important;
+        margin: 0 !important;
+        color: #1c1917 !important;
+    }
+
+    .summary-header-actions {
+        display: flex !important;
+        align-items: center !important;
+        gap: 8px !important;
+    }
+
+    .attendance-sync-btn {
+        min-height: 38px !important;
+        padding: 6px 13px !important;
+        font-size: 12.5px !important;
+        border-radius: 20px !important;
+        font-weight: 600 !important;
+    }
+
+    .attendance-status-badge {
+        min-height: 38px !important;
+        padding: 6px 12px !important;
+        font-size: 12px !important;
+        border-radius: 20px !important;
+    }
+
+    /* ----------------------------------------------------------------------
+       4. HOME STAT CARDS REDESIGN
+       ---------------------------------------------------------------------- */
+    .stats {
+        display: grid !important;
+        grid-template-columns: 1fr 1fr !important;
+        gap: 10px !important;
+        margin-bottom: 16px !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
+    }
+
+    /* The Effective Card (Hero) spans both columns */
+    .stats .stat-card.effective,
+    .stats .stat-card:nth-child(3),
+    .stats .stat-card.overall:last-child {
+        grid-column: 1 / -1 !important;
+        background: linear-gradient(135deg, #ffffff 0%, #fffbeb 100%) !important;
+        border: 1.5px solid #fde68a !important;
+        padding: 16px !important;
+    }
+
+    .stat-card {
+        padding: 14px 12px !important;
+        border-radius: 16px !important;
+        background: #ffffff !important;
+        border: 1px solid #f0eae1 !important;
+        box-shadow: 0 2px 10px rgba(120, 113, 108, 0.04) !important;
+        display: flex !important;
+        flex-direction: column !important;
+        justify-content: space-between !important;
+        min-height: 100px !important;
+        box-sizing: border-box !important;
+    }
+
+    .stat-card span {
+        font-size: 11.5px !important;
+        font-weight: 600 !important;
+        color: #78716c !important;
+        line-height: 1.3 !important;
+        margin-bottom: 4px !important;
+    }
+
+    .stat-card strong {
+        font-size: 26px !important;
+        font-weight: 800 !important;
+        color: #1c1917 !important;
+        line-height: 1.15 !important;
+    }
+
+    .stat-card small {
+        font-size: 12px !important;
+        color: #a8a29e !important;
+        margin-top: 4px !important;
+    }
+
+    .stats .stat-card.effective strong {
+        font-size: 32px !important;
+        color: #b45309 !important;
+    }
+
+    .stat-effective-footer {
+        display: flex !important;
+        align-items: center !important;
+        justify-content: space-between !important;
+        margin-top: 10px !important;
+        padding-top: 10px !important;
+        border-top: 1px dashed rgba(251, 191, 36, 0.4) !important;
+        gap: 6px !important;
+        flex-wrap: wrap !important;
+    }
+
+    .stat-margin-pill {
+        padding: 4px 10px !important;
+        border-radius: 20px !important;
+        font-size: 11.5px !important;
+        font-weight: 700 !important;
+    }
+
+    /* ----------------------------------------------------------------------
+       5. DAILY JOURNEY CARD & TIMELINE
+       ---------------------------------------------------------------------- */
+    #today-attendance-card {
+        border-radius: 20px !important;
+        padding: 16px !important;
+        margin-bottom: 18px !important;
+        box-shadow: 0 4px 16px rgba(120, 113, 108, 0.05) !important;
+        border: 1px solid #ede8de !important;
+    }
+
+    .today-attendance-heading {
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: stretch !important;
+        gap: 12px !important;
+    }
+
+    .today-attendance-heading > div:first-child {
+        display: flex !important;
+        align-items: center !important;
+        justify-content: space-between !important;
+        width: 100% !important;
+    }
+
+    .journey-segmented-nav {
+        display: flex !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
+        padding: 4px !important;
+        border-radius: 14px !important;
+        gap: 4px !important;
+        background: #f5ece4 !important;
+        border: 1.5px solid #fed7aa !important;
+    }
+
+    .journey-tab {
+        flex: 1 !important;
+        min-height: 42px !important;
+        font-size: 13px !important;
+        font-weight: 700 !important;
+        border-radius: 10px !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        text-align: center !important;
+    }
+
+    /* 3-Pill Balanced Row (Zero Awkward Wrapping) */
+    .today-attendance-stats {
+        display: flex !important;
+        flex-wrap: nowrap !important;
+        gap: 6px !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
+        padding: 8px 10px !important;
+        margin: 12px 0 14px 0 !important;
+        background: #fff8f2 !important;
+        border: 1.5px solid #fed7aa !important;
+        border-radius: 14px !important;
+    }
+
+    .today-attendance-stats span {
+        display: none !important;
+    }
+
+    .today-attendance-stats strong {
+        flex: 1 1 0 !important;
+        min-width: 0 !important;
+        text-align: center !important;
+        padding: 7px 4px !important;
+        font-size: 11.5px !important;
+        font-weight: 700 !important;
+        border-radius: 9999px !important;
+        white-space: nowrap !important;
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+    }
+
+    #today-present-count {
+        background: #dcfce7 !important;
+        color: #15803d !important;
+        border: 1px solid #86efac !important;
+    }
+
+    #today-absent-count {
+        background: #fee2e2 !important;
+        color: #b91c1c !important;
+        border: 1px solid #fca5a5 !important;
+    }
+
+    #today-remaining-count {
+        background: #fef3c7 !important;
+        color: #b45309 !important;
+        border: 1px solid #fde68a !important;
+    }
+
+    /* Real Today Journey Timeline Nodes */
+    .today-attendance-timeline-item {
+        display: flex !important;
+        align-items: flex-start !important;
+        gap: 10px !important;
+        padding: 10px 0 !important;
+    }
+
+    .today-attendance-time {
+        width: 68px !important;
+        flex-shrink: 0 !important;
+        font-size: 11px !important;
+        font-weight: 600 !important;
+        color: #78716c !important;
+        line-height: 1.3 !important;
+        padding-top: 2px !important;
+    }
+
+    .today-attendance-class {
+        flex: 1 !important;
+        min-width: 0 !important;
+        background: #fafaf9 !important;
+        border: 1px solid #e7e5e4 !important;
+        border-radius: 12px !important;
+        padding: 10px 12px !important;
+    }
+
+    .today-class-title-row {
+        display: flex !important;
+        align-items: center !important;
+        gap: 8px !important;
+    }
+
+    .today-class-title-row strong {
+        font-size: 13px !important;
+        line-height: 1.3 !important;
+    }
+
+    .timeline-mascot-sticker {
+        width: 28px !important;
+        height: 28px !important;
+        flex-shrink: 0 !important;
+    }
+
+    .today-attendance-status {
+        display: inline-flex !important;
+        margin-top: 6px !important;
+        font-size: 11px !important;
+        padding: 3px 8px !important;
+        border-radius: 6px !important;
+    }
+
+    .journey-expired-card {
+        padding: 18px 14px !important;
+        border-radius: 16px !important;
+        flex-direction: column !important;
+        align-items: stretch !important;
+        text-align: center !important;
+        gap: 12px !important;
+    }
+
+    .journey-reconnect-btn {
+        min-height: 44px !important;
+        font-size: 14px !important;
+        width: 100% !important;
+        justify-content: center !important;
+    }
+
+    /* ----------------------------------------------------------------------
+       6. SUBJECTS OVERVIEW & LECTURE DRAWER ON MOBILE
+       ---------------------------------------------------------------------- */
+    .subject-search-bar-wrap {
+        width: 100% !important;
+        box-sizing: border-box !important;
+        flex-direction: column !important;
+        align-items: stretch !important;
+        gap: 8px !important;
+        margin: 12px 0 10px 0 !important;
+    }
+
+    .subject-search-input-box {
+        width: 100% !important;
+        box-sizing: border-box !important;
+    }
+
+    .subject-search-input {
+        width: 100% !important;
+        box-sizing: border-box !important;
+    }
+
+    .mobile-table-scroll-hint {
+        display: block !important;
+        font-size: 11px !important;
+        color: #78716c !important;
+        text-align: right !important;
+        margin: -4px 4px 8px 0 !important;
+        font-weight: 500 !important;
+        letter-spacing: 0.02em !important;
+    }
+
+    .subject-overview-table-wrap,
+    .table-container {
+        width: 100% !important;
+        max-width: 100% !important;
+        padding: 0 !important; /* Eliminate desktop 24px inner padding so table touches edge-to-edge cleanly */
+        overflow-x: auto !important;
+        -webkit-overflow-scrolling: touch !important;
+        border-radius: 14px !important;
+        box-sizing: border-box !important;
+        background: #ffffff !important;
+        border: 1px solid rgba(231, 226, 217, 0.95) !important;
+        margin-bottom: 14px !important;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.03) !important;
+    }
+
+    .subject-overview-table,
+    .subject-detail-panel table {
+        width: 100% !important;
+        min-width: 640px !important;
+        box-sizing: border-box !important;
+        border-collapse: separate !important;
+        border-spacing: 0 !important;
+    }
+
+    .subject-overview-table th,
+    .subject-overview-table td,
+    .subject-detail-panel table th,
+    .subject-detail-panel table td {
+        padding: 10px 10px !important;
+        font-size: 12px !important;
+        white-space: nowrap !important;
+        border-bottom: 1px solid #f1f5f9 !important;
+    }
+
+    /* Sticky First Column: Subject Name stays fixed on left while swiping metrics horizontally */
+    .subject-overview-table th:first-child,
+    .subject-overview-table td.subject-name-cell {
+        position: sticky !important;
+        left: 0 !important;
+        background: #ffffff !important;
+        z-index: 3 !important;
+        min-width: 130px !important;
+        max-width: 160px !important;
+        white-space: normal !important;
+        line-height: 1.25 !important;
+        box-shadow: 3px 0 6px rgba(0, 0, 0, 0.05) !important;
+    }
+
+    .subject-overview-table thead th:first-child {
+        background: #f8fafc !important;
+        z-index: 4 !important;
+    }
+
+    /* Subject Health Summary Filter Pills: Single Row, No 2-on-line-1 and 1-on-line-2 */
+    .subject-health-summary-pills {
+        display: flex !important;
+        flex-wrap: nowrap !important;
+        gap: 6px !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
+        overflow-x: auto !important;
+        -webkit-overflow-scrolling: touch !important;
+        scrollbar-width: none !important;
+        margin-top: 8px !important;
+    }
+
+    .subject-health-summary-pills::-webkit-scrollbar {
+        display: none !important;
+    }
+
+    .subject-summary-pill {
+        flex: 1 1 0 !important;
+        min-width: 0 !important;
+        padding: 7px 6px !important;
+        font-size: 11.5px !important;
+        white-space: nowrap !important;
+        text-align: center !important;
+        justify-content: center !important;
+        border-radius: 9999px !important;
+    }
+
+    .subject-detail-panel {
+        padding: 12px 10px !important;
+        border-radius: 16px !important;
+        margin: 8px 0 16px 0 !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        box-sizing: border-box !important;
+        overflow: hidden !important;
+    }
+
+    .subject-detail-heading-row {
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        gap: 10px !important;
+        width: 100% !important;
+    }
+
+    .subject-detail-heading-row h2 {
+        font-size: 15px !important;
+        line-height: 1.3 !important;
+        margin: 0 !important;
+        word-break: break-word !important;
+    }
+
+    .subject-detail-close-btn {
+        min-height: 38px !important;
+        padding: 6px 14px !important;
+        font-size: 12.5px !important;
+        width: 100% !important;
+        justify-content: center !important;
+        box-sizing: border-box !important;
+    }
+
+    .subject-attendance-filter {
+        display: flex !important;
+        gap: 6px !important;
+        margin-bottom: 12px !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
+    }
+
+    .subject-filter-button {
+        flex: 1 !important;
+        min-height: 38px !important;
+        padding: 6px 8px !important;
+        font-size: 12px !important;
+        border-radius: 10px !important;
+        text-align: center !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        gap: 4px !important;
+    }
+
+    /* ----------------------------------------------------------------------
+       7. WHAT-IF PLANNER & SCENARIOS (Zero Overflow & Native Mobile Polish)
+       ---------------------------------------------------------------------- */
+    /* Outer Box: Borderless transparent shell on mobile to eliminate nested card slop */
+    .what-if-page {
+        width: 100% !important;
+        max-width: 100% !important;
+        min-width: 0 !important;
+        box-sizing: border-box !important;
+        overflow: hidden !important;
+    }
+
+    .session-expired-notice {
+        width: 100% !important;
+        max-width: 100% !important;
+        min-width: 0 !important;
+        box-sizing: border-box !important;
+        overflow: hidden !important;
+        padding: 10px 12px !important;
+    }
+
+    .session-expired-notice div {
+        min-width: 0 !important;
+        word-break: break-word !important;
+        overflow-wrap: break-word !important;
+    }
+
+    .what-if-scenario-box {
+        background: transparent !important;
+        border: none !important;
+        box-shadow: none !important;
+        padding: 0 !important;
+        margin: 0 0 16px 0 !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        min-width: 0 !important;
+        border-radius: 0 !important;
+        backdrop-filter: none !important;
+        -webkit-backdrop-filter: none !important;
+        overflow: hidden !important;
+        box-sizing: border-box !important;
+    }
+
+    /* Single clean primary card surface for scenario contents */
+    .what-if-card,
+    .what-if-scenario-box .what-if-card,
+    .what-if-scenario-box .bunk-card,
+    .what-if-scenario-box .summary,
+    .today-scenario-shell,
+    .target-scenario-shell,
+    .safe-leaves-shell {
+        background: #ffffff !important;
+        border: 1px solid rgba(226, 220, 210, 0.95) !important;
+        border-radius: 16px !important;
+        padding: 14px 10px !important;
+        box-shadow: 0 2px 12px rgba(28, 25, 23, 0.04) !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        min-width: 0 !important;
+        box-sizing: border-box !important;
+        margin: 0 0 16px 0 !important;
+        overflow: hidden !important;
+    }
+
+    .what-if-scenario-box p,
+    .what-if-scenario-box span,
+    .what-if-scenario-box strong,
+    .what-if-scenario-box small,
+    .what-if-scenario-box h2,
+    .what-if-scenario-box h3,
+    .what-if-scenario-box div {
+        overflow-wrap: break-word !important;
+        word-break: break-word !important;
+    }
+
+    .what-if-top-bar {
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: stretch !important;
+        gap: 8px !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        min-width: 0 !important;
+        box-sizing: border-box !important;
+        margin-bottom: 14px !important;
+        overflow: hidden !important;
+    }
+
+    .what-if-top-bar .what-if-back-btn {
+        align-self: flex-start !important;
+        flex-shrink: 0 !important;
+        min-height: 38px !important;
+        padding: 6px 14px !important;
+        font-size: 12.5px !important;
+        border-radius: 20px !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+    }
+
+    /* Swipeable Scenario Pills Strip */
+    .what-if-scenario-tabs {
+        display: flex !important;
+        flex-wrap: nowrap !important;
+        overflow-x: auto !important;
+        -webkit-overflow-scrolling: touch !important;
+        scrollbar-width: none !important;
+        gap: 6px !important;
+        padding: 2px 2px 6px 2px !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        min-width: 0 !important;
+        box-sizing: border-box !important;
+    }
+
+    .what-if-scenario-tabs::-webkit-scrollbar {
+        display: none !important;
+    }
+
+    .what-if-tab-pill {
+        flex-shrink: 0 !important;
+        white-space: nowrap !important;
+        min-height: 38px !important;
+        padding: 6px 14px !important;
+        font-size: 12px !important;
+        border-radius: 20px !important;
+        font-weight: 600 !important;
+    }
+
+    /* Scenario Header & Action Buttons */
+    .what-if-scenario-heading {
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: stretch !important;
+        gap: 12px !important;
+        margin-bottom: 16px !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        min-width: 0 !important;
+        box-sizing: border-box !important;
+    }
+
+    .what-if-scenario-heading > div:first-child {
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        gap: 4px !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        min-width: 0 !important;
+    }
+
+    .what-if-scenario-heading .what-if-kicker {
+        font-size: 11px !important;
+        font-weight: 800 !important;
+        letter-spacing: 0.08em !important;
+        color: #c2410c !important;
+        text-transform: uppercase !important;
+        margin: 0 !important;
+    }
+
+    .what-if-scenario-heading h2 {
+        font-size: 22px !important;
+        font-weight: 800 !important;
+        color: #1c1917 !important;
+        letter-spacing: -0.02em !important;
+        margin: 0 !important;
+        line-height: 1.25 !important;
+        word-break: break-word !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        min-width: 0 !important;
+    }
+
+    .scenario-heading-actions {
+        display: grid !important;
+        grid-template-columns: 1fr 1fr !important;
+        gap: 8px !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        min-width: 0 !important;
+        box-sizing: border-box !important;
+    }
+
+    .scenario-heading-actions .attendance-sync-btn,
+    .scenario-heading-actions .scenario-reset-btn {
+        width: 100% !important;
+        max-width: 100% !important;
+        min-width: 0 !important;
+        min-height: 40px !important;
+        padding: 8px 8px !important;
+        font-size: 12px !important;
+        font-weight: 600 !important;
+        border-radius: 12px !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        gap: 5px !important;
+        box-sizing: border-box !important;
+        text-decoration: none !important;
+        white-space: nowrap !important;
+    }
+
+    /* Starting Point banner in Calendar / Until-date scenario */
+    .what-if-start {
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        gap: 4px !important;
+        padding: 12px 14px !important;
+        border-radius: 12px !important;
+        margin: 0 0 14px 0 !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
+        background: #fdfbf7 !important;
+        border: 1px solid #ebd9c2 !important;
+    }
+
+    .what-if-start div {
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        gap: 2px !important;
+        width: 100% !important;
+    }
+
+    .what-if-start span {
+        font-size: 11px !important;
+        font-weight: 700 !important;
+        color: #78716c !important;
+        text-transform: uppercase !important;
+        letter-spacing: 0.05em !important;
+    }
+
+    .what-if-start strong {
+        font-size: 16px !important;
+        font-weight: 800 !important;
+        color: #1c1917 !important;
+        word-break: break-word !important;
+        line-height: 1.3 !important;
+    }
+
+    .what-if-start small {
+        font-size: 12px !important;
+        color: #78716c !important;
+    }
+
+    /* Full-width inputs for scenarios on phone */
+    .what-if-field {
+        width: 100% !important;
+        margin-bottom: 14px !important;
+    }
+
+    .what-if-input,
+    .target-input-row {
+        width: 100% !important;
+        max-width: 100% !important;
+        box-sizing: border-box !important;
+        min-height: 48px !important;
+        background: #ffffff !important;
+        border: 1.5px solid #fed7aa !important;
+        border-radius: 12px !important;
+        padding: 4px 14px !important;
+        display: flex !important;
+        align-items: center !important;
+    }
+
+    .what-if-input input,
+    .target-input-row input {
+        width: 100% !important;
+        font-size: 18px !important;
+        font-weight: 700 !important;
+        color: #1c1917 !important;
+        border: none !important;
+        background: transparent !important;
+        outline: none !important;
+        padding: 8px 0 !important;
+    }
+
+    .what-if-input span,
+    .target-input-row span {
+        font-size: 18px !important;
+        font-weight: 800 !important;
+        color: #ea580c !important;
+        margin-left: 6px !important;
+    }
+
+    /* Stepper Controls for Today Scenario */
+    .today-split-options {
+        display: grid !important;
+        grid-template-columns: 1fr 1fr !important;
+        gap: 10px !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
+        margin-bottom: 14px !important;
+    }
+
+    .today-split-options .what-if-field {
+        margin-bottom: 0 !important;
+    }
+
+    .stepper-input-wrap {
+        display: flex !important;
+        align-items: center !important;
+        justify-content: space-between !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        box-sizing: border-box !important;
+        background: #f8fafc !important;
+        border: 1.5px solid #e2e8f0 !important;
+        border-radius: 12px !important;
+        padding: 4px !important;
+        min-height: 48px !important;
+    }
+
+    .stepper-input-wrap input {
+        width: 36px !important;
+        min-width: 0 !important;
+        text-align: center !important;
+        border: none !important;
+        background: transparent !important;
+        font-size: 17px !important;
+        font-weight: 800 !important;
+        color: #1e293b !important;
+        padding: 0 !important;
+    }
+
+    .stepper-input-wrap span {
+        display: none !important;
+    }
+
+    .stepper-btn {
+        width: 38px !important;
+        height: 38px !important;
+        min-width: 38px !important;
+        min-height: 38px !important;
+        border-radius: 8px !important;
+        font-size: 19px !important;
+        font-weight: 700 !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        background: #ffffff !important;
+        border: 1px solid #cbd5e1 !important;
+        color: #0f172a !important;
+        touch-action: manipulation !important;
+    }
+
+    /* Balanced 2x2 Grid for Choices */
+    .unified-choice-grid,
+    .unified-choice-grid.unified-horizon-grid {
+        display: grid !important;
+        grid-template-columns: 1fr 1fr !important;
+        gap: 10px !important;
+        margin-bottom: 16px !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
+    }
+
+    .unified-choice {
+        min-height: 104px !important;
+        padding: 10px 8px !important;
+        border-radius: 14px !important;
+        display: flex !important;
+        flex-direction: column !important;
+        justify-content: space-between !important;
+    }
+
+    .choice-visual-row {
+        flex-direction: column !important;
+        align-items: center !important;
+        text-align: center !important;
+        gap: 4px !important;
+    }
+
+    .choice-mascot-sticker {
+        width: 38px !important;
+        height: 38px !important;
+    }
+
+    .choice-label-col strong {
+        font-size: 13px !important;
+    }
+
+    .choice-label-col small {
+        font-size: 10.5px !important;
+        display: block !important;
+        line-height: 1.25 !important;
+    }
+
+    /* Scenario Header Stats: 2-Column Equal Tiles for Today Context */
+    .today-context-header {
+        display: grid !important;
+        grid-template-columns: 1fr 1fr !important;
+        gap: 8px !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
+        margin-bottom: 16px !important;
+    }
+
+    /* Single High-Ceiling Banner for Target Scenario */
+    .target-stat-banner {
+        display: flex !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
+        margin-bottom: 16px !important;
+    }
+
+    .target-stat-banner .target-stat-pill {
+        width: 100% !important;
+        flex: 1 !important;
+    }
+
+    .today-stat-pill,
+    .today-remaining-pill,
+    .target-stat-pill {
+        box-sizing: border-box !important;
+        padding: 10px 8px !important;
+        border-radius: 14px !important;
+        text-align: center !important;
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: center !important;
+        justify-content: center !important;
+        margin: 0 !important;
+    }
+
+    /* Scenario Result Flow & Hero: Zero Overflow */
+    .date-plan-result-hero {
+        padding: 12px 8px !important;
+        gap: 8px !important;
+        justify-content: space-around !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
+    }
+
+    .date-plan-flow-col {
+        min-width: 0 !important;
+        flex: 1 !important;
+        text-align: center !important;
+    }
+
+    .date-plan-flow-val {
+        font-size: 26px !important;
+        line-height: 1.1 !important;
+    }
+
+    .date-plan-flow-arrow {
+        font-size: 18px !important;
+        flex-shrink: 0 !important;
+    }
+
+    /* Scenario Result Pills: Single Balanced Row (Never 2 on line 1 and 1 on line 2) */
+    .date-plan-summary-pills {
+        display: flex !important;
+        flex-wrap: nowrap !important;
+        gap: 6px !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
+        margin-top: 14px !important;
+    }
+
+    .date-plan-summary-pills .date-plan-pill {
+        flex: 1 1 0 !important;
+        min-width: 0 !important;
+        text-align: center !important;
+        padding: 7px 4px !important;
+        font-size: 11px !important;
+        white-space: nowrap !important;
+        border-radius: 9999px !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
+    }
+
+    /* Target & Safe Leaves Hero Cards: Zero Overflow */
+    .target-hero-card,
+    .safe-leaves-hero-card {
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: stretch !important;
+        gap: 12px !important;
+        padding: 14px 12px !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
+        border-radius: 14px !important;
+        overflow: hidden !important;
+    }
+
+    .target-hero-meta,
+    .safe-leaves-hero-meta {
+        width: 100% !important;
+    }
+
+    .target-hero-number,
+    .safe-leaves-hero-number {
+        display: flex !important;
+        align-items: baseline !important;
+        gap: 8px !important;
+        flex-wrap: wrap !important;
+    }
+
+    .target-hero-number strong,
+    .safe-leaves-hero-number strong {
+        font-size: 32px !important;
+    }
+
+    .target-hero-status,
+    .safe-leaves-hero-status {
+        width: 100% !important;
+        margin-top: 4px !important;
+    }
+
+    .target-metric-badge,
+    .safe-leaves-projected-badge {
+        display: block !important;
+        width: 100% !important;
+        text-align: center !important;
+        padding: 6px 8px !important;
+        font-size: 11px !important;
+        box-sizing: border-box !important;
+        border-radius: 8px !important;
+    }
+
+    .target-day-plan {
+        width: 100% !important;
+        box-sizing: border-box !important;
+        overflow: hidden !important;
+        margin-top: 14px !important;
+        border-radius: 14px !important;
+    }
+
+    .target-day-row {
+        padding: 10px 10px !important;
+        gap: 8px !important;
+        box-sizing: border-box !important;
+    }
+
+    .target-day-date {
+        font-size: 13px !important;
+    }
+
+    .target-day-meta {
+        font-size: 11px !important;
+    }
+
+    /* Date Planner Calendar Toolbar */
+    .date-planner {
+        width: 100% !important;
+        max-width: 100% !important;
+        box-sizing: border-box !important;
+        padding: 0 !important;
+        border: none !important;
+        background: transparent !important;
+        overflow: hidden !important;
+    }
+
+    .date-planner-toolbar {
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: stretch !important;
+        gap: 8px !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        min-width: 0 !important;
+        box-sizing: border-box !important;
+    }
+
+    .date-planner-modes {
+        display: grid !important;
+        grid-template-columns: 1fr 1fr 1.2fr !important;
+        gap: 6px !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        min-width: 0 !important;
+        box-sizing: border-box !important;
+    }
+
+    .date-plan-mode {
+        width: 100% !important;
+        min-width: 0 !important;
+        min-height: 38px !important;
+        padding: 6px 2px !important;
+        font-size: 11px !important;
+        font-weight: 700 !important;
+        border-radius: 8px !important;
+        text-align: center !important;
+        white-space: nowrap !important;
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        box-sizing: border-box !important;
+        margin: 0 !important;
+    }
+
+    .date-plan-mode.edit-schedule-toggle {
+        margin-left: 0 !important;
+    }
+
+    .date-planner-month {
+        display: flex !important;
+        align-items: center !important;
+        justify-content: space-between !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        min-width: 0 !important;
+        padding: 4px 2px !important;
+        box-sizing: border-box !important;
+    }
+
+    .date-planner-month strong {
+        font-size: 14px !important;
+        font-weight: 800 !important;
+        color: #1c1917 !important;
+        min-width: 0 !important;
+        text-align: center !important;
+    }
+
+    .calendar-nav {
+        width: 32px !important;
+        height: 32px !important;
+        border-radius: 8px !important;
+        font-size: 18px !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        background: #f5f5f4 !important;
+        border: 1px solid #e7e5e4 !important;
+        flex-shrink: 0 !important;
+    }
+
+    /* 7-Column Mobile Calendar: Mon through Sun fit 100% across the screen with zero horizontal blowout */
+    .calendar-week-spacer,
+    .calendar-week-select {
+        display: none !important;
+    }
+
+    .calendar-weekdays,
+    .calendar-grid {
+        display: grid !important;
+        grid-template-columns: repeat(7, minmax(0, 1fr)) !important;
+        gap: 3px !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        min-width: 0 !important;
+        box-sizing: border-box !important;
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+
+    .calendar-weekdays span {
+        font-size: 9.5px !important;
+        font-weight: 700 !important;
+        text-align: center !important;
+        padding: 4px 0 !important;
+        min-width: 0 !important;
+        color: #78716c !important;
+        text-transform: uppercase !important;
+    }
+
+    .calendar-day {
+        min-width: 0 !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        box-sizing: border-box !important;
+        min-height: 48px !important;
+        max-height: 54px !important;
+        padding: 3px 1px !important;
+        border-radius: 7px !important;
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: center !important;
+        justify-content: space-between !important;
+        overflow: hidden !important;
+        text-align: center !important;
+        border: 1px solid rgba(231, 226, 217, 0.9) !important;
+        background: #ffffff !important;
+    }
+
+    .calendar-day.blank {
+        border-color: transparent !important;
+        background: transparent !important;
+    }
+
+    .calendar-day strong {
+        font-size: 13px !important;
+        font-weight: 800 !important;
+        line-height: 1.1 !important;
+        text-align: center !important;
+        margin-bottom: 2px !important;
+        display: block !important;
+        width: 100% !important;
+        color: #1c1917 !important;
+    }
+
+    .calendar-day span {
+        font-size: 8px !important;
+        font-weight: 600 !important;
+        line-height: 1.1 !important;
+        text-align: center !important;
+        white-space: nowrap !important;
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
+        max-width: 100% !important;
+        display: block !important;
+        letter-spacing: -0.02em !important;
+        color: #78716c !important;
+    }
+
+    .calendar-day .cal-full {
+        display: none !important;
+    }
+
+    .calendar-day small {
+        font-size: 7px !important;
+        font-weight: 800 !important;
+        line-height: 1 !important;
+        text-align: center !important;
+        white-space: nowrap !important;
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
+        max-width: 100% !important;
+        display: block !important;
+        letter-spacing: 0 !important;
+        margin-top: 1px !important;
+    }
+
+    .calendar-day.today {
+        border-color: #f59e0b !important;
+        background: #fffbeb !important;
+    }
+
+    .calendar-day.attend {
+        background: #f0fdf4 !important;
+        border-color: #86efac !important;
+    }
+
+    .calendar-day.attend strong,
+    .calendar-day.attend small {
+        color: #15803d !important;
+    }
+
+    .calendar-day.bunk {
+        background: #fef2f2 !important;
+        border-color: #fca5a5 !important;
+    }
+
+    .calendar-day.bunk strong,
+    .calendar-day.bunk small {
+        color: #b91c1c !important;
+    }
+
+    /* Date Planner 3-Tile Summary (Attend, Skip, Projected) */
+    .date-plan-summary {
+        display: grid !important;
+        grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+        gap: 6px !important;
+        padding: 8px 6px !important;
+        margin-top: 14px !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        box-sizing: border-box !important;
+        background: #fafaf9 !important;
+        border-radius: 12px !important;
+    }
+
+    .date-plan-summary > div {
+        padding: 8px 4px !important;
+        border-radius: 10px !important;
+        text-align: center !important;
+        min-width: 0 !important;
+        box-sizing: border-box !important;
+    }
+
+    .date-plan-summary span {
+        font-size: 9.5px !important;
+        font-weight: 700 !important;
+        text-transform: uppercase !important;
+        letter-spacing: 0.04em !important;
+        margin-bottom: 2px !important;
+        display: block !important;
+        white-space: nowrap !important;
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
+    }
+
+    .date-plan-summary strong {
+        font-size: 11px !important;
+        font-weight: 750 !important;
+        line-height: 1.25 !important;
+        display: block !important;
+        word-break: break-word !important;
+        overflow-wrap: break-word !important;
+        white-space: normal !important;
+    }
+
+    /* Date Planner Selected Days list: Zero Overflow on Mobile */
+    .selected-plan {
+        width: 100% !important;
+        box-sizing: border-box !important;
+        overflow: hidden !important;
+        padding: 10px 8px !important;
+    }
+
+    .selected-plan-row {
+        position: relative !important;
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: stretch !important;
+        gap: 10px !important;
+        padding: 12px 14px !important;
+        border-radius: 12px !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
+    }
+
+    .selected-plan-info {
+        display: flex !important;
+        align-items: center !important;
+        justify-content: flex-start !important;
+        gap: 8px !important;
+        padding-right: 36px !important;
+        min-width: 0 !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
+    }
+
+    .selected-plan-date {
+        font-size: 13.5px !important;
+        font-weight: 750 !important;
+        color: #1c1917 !important;
+    }
+
+    .plan-split-total {
+        font-size: 11px !important;
+        font-weight: 600 !important;
+        color: #78716c !important;
+        background: rgba(120, 113, 108, 0.08) !important;
+        padding: 2px 7px !important;
+        border-radius: 6px !important;
+        white-space: nowrap !important;
+    }
+
+    .selected-plan-remove {
+        position: absolute !important;
+        top: 10px !important;
+        right: 10px !important;
+        width: 28px !important;
+        height: 28px !important;
+        min-width: 28px !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        border: 1px solid rgba(231, 226, 217, 0.9) !important;
+        border-radius: 8px !important;
+        background: #ffffff !important;
+        color: #78716c !important;
+        font-size: 16px !important;
+        cursor: pointer !important;
+        margin: 0 !important;
+        touch-action: manipulation !important;
+    }
+
+    .plan-split-controls {
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 7px !important;
+        width: 100% !important;
+        margin: 0 !important;
+        box-sizing: border-box !important;
+    }
+
+    .plan-split-item {
+        display: flex !important;
+        align-items: center !important;
+        justify-content: space-between !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
+        background: #ffffff !important;
+        border: 1px solid rgba(231, 226, 217, 0.85) !important;
+        border-radius: 10px !important;
+        padding: 6px 10px !important;
+    }
+
+    .plan-split-item label {
+        font-size: 12px !important;
+        font-weight: 750 !important;
+        text-transform: uppercase !important;
+        letter-spacing: 0.04em !important;
+        margin: 0 !important;
+    }
+
+    .plan-split-attend label {
+        color: #15803d !important;
+    }
+
+    .plan-split-skip label {
+        color: #b91c1c !important;
+    }
+
+    .stepper-input-wrap.plan-stepper {
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        width: auto !important;
+        min-width: 108px !important;
+        max-width: 124px !important;
+        padding: 1px 3px !important;
+        background: #faf8f5 !important;
+        border: 1px solid rgba(231, 226, 217, 0.9) !important;
+        border-radius: 8px !important;
+        box-sizing: border-box !important;
+        margin: 0 !important;
+        gap: 2px !important;
+    }
+
+    .stepper-input-wrap.plan-stepper .stepper-btn {
+        width: 30px !important;
+        height: 28px !important;
+        min-width: 30px !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        font-size: 15px !important;
+        font-weight: 750 !important;
+        border-radius: 6px !important;
+        touch-action: manipulation !important;
+        flex-shrink: 0 !important;
+    }
+
+    .stepper-input-wrap.plan-stepper input[type="number"] {
+        width: 34px !important;
+        min-width: 28px !important;
+        text-align: center !important;
+        font-size: 14px !important;
+        font-weight: 750 !important;
+        border: none !important;
+        background: transparent !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        -moz-appearance: textfield !important;
+    }
+
+    /* Sessional Layout on Phone: Zero Overflow */
+    .sessional-layout-grid {
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 14px !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        box-sizing: border-box !important;
+    }
+
+    .sessional-main-column {
+        order: 1 !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
+    }
+
+    .sessional-sidebar-column {
+        order: 2 !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
+    }
+
+    .sessional-tracker {
+        width: 100% !important;
+        box-sizing: border-box !important;
+        padding: 14px 10px !important;
+        border-radius: 14px !important;
+    }
+
+    .checkpoint-list {
+        width: 100% !important;
+        box-sizing: border-box !important;
+    }
+
+    .checkpoint-item {
+        width: 100% !important;
+        box-sizing: border-box !important;
+    }
+
+    .sessional-status,
+    .safe-leave-box,
+    .projection-box,
+    .flow-card,
+    .bunk-card.carried-forward {
+        padding: 12px 10px !important;
+        margin: 10px 0 !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        box-sizing: border-box !important;
+        border-radius: 14px !important;
+    }
+
+    .leave-inputs {
+        display: grid !important;
+        grid-template-columns: 1fr 1fr !important;
+        gap: 8px !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
+    }
+
+    .leave-inputs > div {
+        width: 100% !important;
+        box-sizing: border-box !important;
+    }
+
+    .leave-inputs input {
+        width: 100% !important;
+        box-sizing: border-box !important;
+    }
+
+    .leave-preview {
+        width: 100% !important;
+        box-sizing: border-box !important;
+        padding: 8px 10px !important;
+        margin: 10px 0 !important;
+        border-radius: 10px !important;
+    }
+
+    .attendance-flow {
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 8px !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
+    }
+
+    .flow-arrow {
+        transform: rotate(90deg) !important;
+        text-align: center !important;
+        margin: 2px 0 !important;
+    }
+
+    /* Thumb-friendly steppers (+ and -) */
+    .stepper-btn {
+        width: 44px !important;
+        height: 44px !important;
+        font-size: 20px !important;
+        border-radius: 12px !important;
+    }
+
+    .scenario-calculate-btn,
+    .attendance-button {
+        min-height: 46px !important;
+        font-size: 15px !important;
+        border-radius: 14px !important;
+        font-weight: 700 !important;
+    }
+
+    /* ----------------------------------------------------------------------
+       8. QUICK RECONNECT MODAL (Mobile Bottom-Sheet)
+       ---------------------------------------------------------------------- */
+    .tein-modal-backdrop {
+        align-items: flex-end !important; /* Slide up as a bottom-sheet on phones */
+        padding: 0 !important;
+    }
+
+    .tein-modal-card {
+        width: 100% !important;
+        max-width: 100% !important;
+        border-radius: 24px 24px 0 0 !important;
+        padding: 20px 18px calc(24px + env(safe-area-inset-bottom, 0px)) 18px !important;
+        box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.16) !important;
+        animation: slideUpSheet 0.28s cubic-bezier(0.16, 1, 0.3, 1) !important;
+    }
+
+    @keyframes slideUpSheet {
+        from { transform: translateY(100%); }
+        to { transform: translateY(0); }
+    }
+
+    .tein-modal-header {
+        margin-bottom: 16px !important;
+    }
+
+    .tein-modal-title {
+        font-size: 17px !important;
+    }
+
+    .tein-modal-sub {
+        font-size: 12.5px !important;
+    }
+
+    .tein-modal-field {
+        margin-bottom: 14px !important;
+    }
+
+    .tein-modal-field label {
+        font-size: 12.5px !important;
+        margin-bottom: 5px !important;
+    }
+
+    .today-no-classes-card {
+        padding: 14px 14px !important;
+        gap: 12px !important;
+    }
+    .today-no-classes-card .no-classes-icon {
+        width: 38px !important;
+        height: 38px !important;
+        font-size: 20px !important;
+    }
+    .today-no-classes-card .no-classes-content strong {
+        font-size: 13.5px !important;
+    }
+    .today-no-classes-card .no-classes-content p {
+        font-size: 12px !important;
+    }
+
+    /* ----------------------------------------------------------------------
+       9. EXTRA SMALL PHONES (iPhone SE, Galaxy A-series <= 380px)
+       ---------------------------------------------------------------------- */
+    @media screen and (max-width: 380px) {
+        .stat-card strong {
+            font-size: 22px !important;
+        }
+
+        .stats .stat-card.effective strong {
+            font-size: 26px !important;
+        }
+
+        .journey-tab-btn {
+            font-size: 12px !important;
+        }
+
+        .unified-choice {
+            padding: 10px 6px !important;
+        }
+    }
+}

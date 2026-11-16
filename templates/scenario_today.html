@@ -1,0 +1,161 @@
+<div class="what-if-card today-scenario-shell">
+
+    <div class="today-context-header">
+        <div class="today-stat-pill">
+            <span class="today-stat-label">Starting</span>
+            <strong class="today-stat-val">{{ today_scenario_start.percentage }}%</strong>
+            <span class="today-stat-sub">{{ today_scenario_start.attended }}/{{ today_scenario_start.total }}</span>
+        </div>
+        <div class="today-remaining-pill">
+            <span class="today-remaining-num">{{ today_scenario_start.today_remaining }}</span>
+            <span class="today-remaining-text">remaining today</span>
+        </div>
+    </div>
+
+    {% if today_scenario_start.today_remaining > 0 %}
+
+    <form action="/scenario/today" method="POST" class="what-if-form today-stepper-form">
+        <input type="hidden" name="return_to" value="/what-if/today">
+
+        {% set today_total = today_scenario_start.today_remaining %}
+        <div class="what-if-options today-split-options">
+
+            <div class="what-if-field">
+                <label for="scenario_attended">Attend</label>
+                <div class="what-if-input stepper-input-wrap">
+                    <button type="button" class="stepper-btn" onclick="stepScenarioAttend(-1)" aria-label="Decrease attended classes">−</button>
+                    <input type="number" id="scenario_attended" name="attended"
+                           min="0" max="{{ today_total }}"
+                           value="{{ today_scenario.attended if today_scenario else 0 }}"
+                           inputmode="numeric" required>
+                    <button type="button" class="stepper-btn" onclick="stepScenarioAttend(1)" aria-label="Increase attended classes">+</button>
+                    <span>classes</span>
+                </div>
+            </div>
+
+            <div class="what-if-field">
+                <label for="scenario_leave">Skip</label>
+                <div class="what-if-input stepper-input-wrap">
+                    <button type="button" class="stepper-btn" onclick="stepScenarioSkip(-1)" aria-label="Decrease skipped classes">−</button>
+                    <input type="number" id="scenario_leave" name="leave"
+                           min="0" max="{{ today_total }}"
+                           value="{{ today_scenario.leave if today_scenario else 0 }}"
+                           inputmode="numeric" required>
+                    <button type="button" class="stepper-btn" onclick="stepScenarioSkip(1)" aria-label="Increase skipped classes">+</button>
+                    <span>classes</span>
+                </div>
+            </div>
+
+        </div>
+
+        <script>
+        (function () {
+            const attendInput = document.getElementById("scenario_attended");
+            const skipInput = document.getElementById("scenario_leave");
+            const total = Number({{ today_total }});
+
+            if (!attendInput || !skipInput || !Number.isFinite(total)) return;
+
+            function clamp(value) {
+                if (isNaN(value)) return 0;
+                return Math.min(total, Math.max(0, value));
+            }
+
+            function syncFromAttend() {
+                if (attendInput.value === "") return;
+                const attend = clamp(parseInt(attendInput.value, 10));
+                attendInput.value = attend;
+                skipInput.value = total - attend;
+            }
+
+            function syncFromSkip() {
+                if (skipInput.value === "") return;
+                const skip = clamp(parseInt(skipInput.value, 10));
+                skipInput.value = skip;
+                attendInput.value = total - skip;
+            }
+
+            window.stepScenarioAttend = function(delta) {
+                const current = parseInt(attendInput.value || "0", 10) || 0;
+                attendInput.value = clamp(current + delta);
+                syncFromAttend();
+            };
+
+            window.stepScenarioSkip = function(delta) {
+                const current = parseInt(skipInput.value || "0", 10) || 0;
+                skipInput.value = clamp(current + delta);
+                syncFromSkip();
+            };
+
+            attendInput.addEventListener("input", syncFromAttend);
+            skipInput.addEventListener("input", syncFromSkip);
+
+            attendInput.addEventListener("blur", function() {
+                if (attendInput.value === "") attendInput.value = 0;
+                syncFromAttend();
+            });
+
+            skipInput.addEventListener("blur", function() {
+                if (skipInput.value === "") skipInput.value = 0;
+                syncFromSkip();
+            });
+        })();
+        </script>
+
+        {% if today_scenario and not today_scenario.valid %}
+        <div class="what-if-error">
+            <strong>Plan is too large.</strong>
+            <span>{{ today_scenario.error }}</span>
+        </div>
+        {% endif %}
+
+        <button type="submit" class="attendance-button">Calculate Impact</button>
+    </form>
+
+    {% else %}
+
+    <div class="what-if-empty">
+        <strong>No classes left today.</strong>
+        <span>All classes completed or marked.</span>
+    </div>
+
+    {% endif %}
+
+    {% if today_scenario and today_scenario.valid %}
+
+    <div class="what-if-result date-plan-result-flow" id="scenario-result">
+        <div class="date-plan-result-hero">
+            <div class="date-plan-flow-col">
+                <span class="date-plan-flow-label">Now</span>
+                <strong class="date-plan-flow-val">{{ today_scenario.starting.percentage }}%</strong>
+                <span class="date-plan-flow-meta">{{ today_scenario.starting.attended }}/{{ today_scenario.starting.total }}</span>
+            </div>
+
+            <div class="date-plan-flow-arrow">→</div>
+
+            <div class="date-plan-flow-col projected">
+                <span class="date-plan-flow-label">After today</span>
+                <strong class="date-plan-flow-val">{{ today_scenario.projected_percentage }}%</strong>
+                <span class="date-plan-flow-meta">{{ today_scenario.projected_attended }}/{{ today_scenario.projected_total }}</span>
+            </div>
+        </div>
+
+        <div class="date-plan-summary-pills">
+            <span class="date-plan-pill attend">Attend {{ today_scenario.attended }}</span>
+            <span class="date-plan-pill bunk">Skip {{ today_scenario.leave }}</span>
+            {% if today_scenario.remaining_after_plan > 0 %}
+            <span class="date-plan-pill total">{{ today_scenario.remaining_after_plan }} unplanned</span>
+            {% endif %}
+        </div>
+
+        <div class="scenario-result-reset-wrap" style="text-align: center; margin-top: 14px;">
+            <a href="/scenario/reset?scenario=today" class="result-card-reset-btn" title="Reset this calculation and try other numbers">
+                <span class="reset-icon">↺</span>
+                <span class="reset-text">Reset Calculation</span>
+            </a>
+        </div>
+    </div>
+
+    {% endif %}
+
+</div>

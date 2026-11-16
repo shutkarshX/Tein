@@ -1,0 +1,837 @@
+{% if calculator_step in [1, 2, 3] %}
+<div class="sessional-layout-grid" id="sessional-active-form">
+    <div class="sessional-main-column">
+    <!-- STEP 1 -->
+    <!-- ================================= -->
+
+    {% if calculator_step == 1 and phase_1 %}
+
+    {% set first = phase_1.checkpoints[0] %}
+
+    <div class="bunk-results">
+
+        <div class="bunk-card">
+
+            <h3>First Sessional</h3>
+
+            <p>
+                Checkpoint:
+                <strong>{{ first.date }}</strong>
+            </p>
+
+            <p>
+                Required attendance:
+                <strong>{{ first.target_attendance }}%</strong>
+            </p>
+
+
+            <!-- STATUS -->
+
+            {% if first.status == "safe" %}
+
+            <div class="sessional-status">
+
+                <h3>🟢 Attendance is Safe</h3>
+
+                <p>
+                    You are currently above the
+                    {{ first.target_attendance }}% attendance requirement.
+                </p>
+
+            </div>
+
+            {% elif first.status == "recovery" %}
+
+            <div class="sessional-status">
+
+                <h3>🟡 Attendance Recovery Needed</h3>
+
+                <p>
+                    Your attendance is currently
+                    below {{ first.target_attendance }}%.
+                </p>
+
+                <p>
+                    You need to attend approximately
+                    <strong>
+                        {{ first.classes_needed_for_target }}
+                    </strong>
+                    consecutive classes to reach {{ first.target_attendance }}%.
+                </p>
+
+            </div>
+
+            {% else %}
+
+            <div class="sessional-status">
+
+                <h3>🔴 {{ first.target_attendance }}% Not Reachable</h3>
+
+                <p>
+                    Even if you attend every remaining
+                    class before this checkpoint, {{ first.target_attendance }}%
+                    cannot be reached.
+                </p>
+
+                <p>
+                    Maximum possible attendance:
+                    <strong>
+                        {{ first.maximum_possible_percentage }}%
+                    </strong>
+                </p>
+
+            </div>
+
+            {% endif %}
+
+
+            <!-- STARTING ATTENDANCE -->
+
+            <div class="attendance-flow">
+
+                <div class="flow-card">
+
+                    <span>Starting Attendance</span>
+
+                    <strong>
+                        {{ first.starting_attended }}
+                        /
+                        {{ first.starting_total }}
+                    </strong>
+
+                    <small>
+                        {{ first.starting_percentage }}%
+                    </small>
+
+                </div>
+
+                <div class="flow-arrow">
+                    →
+                </div>
+
+                <div class="flow-card">
+
+                    <span>Future Classes</span>
+
+                    <strong>
+                        {{ first.future_classes }}
+                    </strong>
+
+                    <small>
+                        {{ first.teaching_days }} teaching day(s)
+                    </small>
+
+                </div>
+
+            </div>
+
+
+            <!-- SAFE LEAVE -->
+
+            <div class="safe-leave-box">
+
+                <span>Maximum Safe Leave</span>
+
+                <strong>
+                    {{ first.maximum_leave_display }}
+                </strong>
+
+                <p>
+                    This is the maximum you can miss
+                    while staying at or above {{ first.target_attendance }}%.
+                </p>
+
+            </div>
+
+
+            <hr>
+
+
+            <!-- USER CHOICE -->
+
+            <h3>
+                How much leave will you take?
+            </h3>
+
+            <p>
+                Enter the leave you actually plan to take.
+            </p>
+
+
+            <form
+                action="/sessional-1"
+                method="POST"
+                data-maximum-classes="{{ first.maximum_leave_classes }}"
+                data-attended="{{ first.starting_attended }}"
+                data-total="{{ first.starting_total }}"
+                data-future="{{ first.future_classes }}"
+                onsubmit="normalizeLeaveInputs(this)">
+
+                <div class="leave-inputs">
+
+                    <div>
+
+                        <label for="leave_1_days">
+                            Days
+                        </label>
+
+                        <input
+                            type="number"
+                            id="leave_1_days"
+                            name="leave_1_days"
+                            min="0"
+                            value="0"
+                            required
+                        >
+
+                    </div>
+
+                    <div>
+
+                        <label for="leave_1_classes">
+                            Classes
+                        </label>
+
+                        <input
+                            type="number"
+                            id="leave_1_classes"
+                            name="leave_1_classes"
+                            min="0"
+                            value="0"
+                            required
+                        >
+
+                    </div>
+
+                </div>
+
+
+                <p class="leave-preview">
+
+                    Your leave:
+
+                    <strong id="leave_1_preview">
+                        0 class(es)
+                    </strong>
+
+                </p>
+
+
+                <!-- LIVE PROJECTION -->
+
+                <div class="projection-box">
+
+                    <span>
+                        At the checkpoint
+                    </span>
+
+                    <strong id="projection_1">
+                        {{ first.starting_attended }}
+                        /
+                        {{ first.starting_total + first.future_classes }}
+                        — projected attendance
+                    </strong>
+
+                    <p>
+                        This projected attendance will
+                        become your starting attendance
+                        for the Second Sessional.
+                    </p>
+
+                </div>
+
+
+                <button
+                    type="submit"
+                    class="attendance-button">
+
+                    Continue to Second Sessional
+
+                </button>
+
+            </form>
+
+        </div>
+
+    </div>
+
+    {% endif %}
+
+
+    <!-- ================================= -->
+    <!-- STEP 2 -->
+    <!-- ================================= -->
+
+    {% if calculator_step == 2 and phase_1 %}
+
+    {% set first = phase_1.checkpoints[0] %}
+    {% set second = phase_1.checkpoints[1] %}
+
+    <div class="bunk-results">
+
+
+        <!-- FIRST SESSIONAL / STARTING ATTENDANCE -->
+
+        {% if first.state != "completed" %}
+
+        <div class="bunk-card carried-forward">
+
+            <h3>
+                First Sessional — Expected Attendance
+            </h3>
+
+            <p>
+                Based on the leave you selected, your
+                attendance at the First Sessional will be:
+            </p>
+
+            <div class="carried-grid">
+
+                <div>
+                    <span>Leave You Selected</span>
+                    <strong>
+                        {{ first.requested_leave_display }}
+                    </strong>
+                </div>
+
+                <div>
+                    <span>Attendance at First Sessional</span>
+                    <strong>
+                        {{ first.requested_projected_attended }}
+                        /
+                        {{ first.requested_projected_total }}
+                    </strong>
+                </div>
+
+                <div>
+                    <span>Expected Percentage</span>
+                    <strong>
+                        {{ first.requested_projected_percentage }}%
+                    </strong>
+                </div>
+
+            </div>
+
+            <p class="carry-message">
+                This expected attendance will become
+                your starting attendance for the
+                Second Sessional.
+            </p>
+
+        </div>
+
+        {% endif %}
+
+
+        <!-- CURRENT CHECKPOINT -->
+
+        <div class="bunk-card">
+
+            <h3>Second Sessional</h3>
+
+            <p>
+                Checkpoint:
+                <strong>{{ second.date }}</strong>
+            </p>
+
+
+            {% if second.status == "safe" %}
+
+            <div class="sessional-status">
+
+                <h3>🟢 Attendance is Safe</h3>
+
+                <p>
+                    You are currently above the
+                    {{ second.target_attendance }}% attendance requirement.
+                </p>
+
+            </div>
+
+            {% elif second.status == "recovery" %}
+
+            <div class="sessional-status">
+
+                <h3>🟡 Attendance Recovery Needed</h3>
+
+                <p>
+                    Your attendance is currently
+                    below {{ second.target_attendance }}%.
+                </p>
+
+                <p>
+                    You need to attend approximately
+                    <strong>
+                        {{ second.classes_needed_for_target }}
+                    </strong>
+                    consecutive classes to reach {{ second.target_attendance }}%.
+                </p>
+
+            </div>
+
+            {% else %}
+
+            <div class="sessional-status">
+
+                <h3>🔴 {{ second.target_attendance }}% Not Reachable</h3>
+
+                <p>
+                    Even if you attend every remaining
+                    class before this checkpoint, {{ second.target_attendance }}%
+                    cannot be reached.
+                </p>
+
+                <p>
+                    Maximum possible attendance:
+                    <strong>
+                        {{ second.maximum_possible_percentage }}%
+                    </strong>
+                </p>
+
+            </div>
+
+            {% endif %}
+
+
+            <!-- STARTING ATTENDANCE -->
+
+            <div class="attendance-flow">
+
+                <div class="flow-card">
+
+                    <span>Starting Attendance</span>
+
+                    <strong>
+                        {{ second.starting_attended }}
+                        /
+                        {{ second.starting_total }}
+                    </strong>
+
+                    <small>
+                        {{ second.starting_percentage }}%
+                    </small>
+
+                </div>
+
+                <div class="flow-arrow">
+                    →
+                </div>
+
+                <div class="flow-card">
+
+                    <span>Future Classes</span>
+
+                    <strong>
+                        {{ second.future_classes }}
+                    </strong>
+
+                    <small>
+                        {{ second.teaching_days }} teaching day(s)
+                    </small>
+
+                </div>
+
+            </div>
+
+
+            <!-- SAFE LEAVE -->
+
+            <div class="safe-leave-box">
+
+                <span>Maximum Safe Leave</span>
+
+                <strong>
+                    {{ second.maximum_leave_display }}
+                </strong>
+
+                <p>
+                    This is the maximum you can miss
+                    while staying at or above {{ second.target_attendance }}%.
+                </p>
+
+            </div>
+
+
+            <hr>
+
+
+            <!-- USER CHOICE -->
+
+            <h3>
+                How much leave will you take?
+            </h3>
+
+            <p>
+                Enter the leave you actually plan to take.
+            </p>
+
+
+            <form
+                action="/sessional-2"
+                method="POST"
+                data-maximum-classes="{{ second.maximum_leave_classes }}"
+                data-attended="{{ second.starting_attended }}"
+                data-total="{{ second.starting_total }}"
+                data-future="{{ second.future_classes }}"
+                onsubmit="normalizeLeaveInputs(this)">
+
+                <div class="leave-inputs">
+
+                    <div>
+
+                        <label for="leave_2_days">
+                            Days
+                        </label>
+
+                        <input
+                            type="number"
+                            id="leave_2_days"
+                            name="leave_2_days"
+                            min="0"
+                            value="0"
+                            required
+                        >
+
+                    </div>
+
+                    <div>
+
+                        <label for="leave_2_classes">
+                            Classes
+                        </label>
+
+                        <input
+                            type="number"
+                            id="leave_2_classes"
+                            name="leave_2_classes"
+                            min="0"
+                            value="0"
+                            required
+                        >
+
+                    </div>
+
+                </div>
+
+
+                <p class="leave-preview">
+
+                    Your leave:
+
+                    <strong id="leave_2_preview">
+                        0 class(es)
+                    </strong>
+
+                </p>
+
+
+                <!-- LIVE PROJECTION -->
+
+                <div class="projection-box">
+
+                    <span>
+                        At the checkpoint
+                    </span>
+
+                    <strong id="projection_2">
+                        {{ second.starting_attended }}
+                        /
+                        {{ second.starting_total + second.future_classes }}
+                        — projected attendance
+                    </strong>
+
+                    <p>
+                        This projected attendance will
+                        become your starting attendance
+                        for the Third Sessional.
+                    </p>
+
+                </div>
+
+
+                <button
+                    type="submit"
+                    class="attendance-button">
+
+                    Continue to Third Sessional
+
+                </button>
+
+            </form>
+
+        </div>
+
+    </div>
+
+    {% endif %}
+
+
+    <!-- ================================= -->
+    <!-- STEP 3 -->
+    <!-- ================================= -->
+
+    {% if calculator_step == 3 and phase_1 %}
+
+    {% set first = phase_1.checkpoints[0] %}
+    {% set second = phase_1.checkpoints[1] %}
+    {% set third = phase_1.checkpoints[2] %}
+
+    <div class="bunk-results">
+
+        <div class="bunk-card">
+
+            <h3>Third Sessional</h3>
+
+            <p>
+                Checkpoint:
+                <strong>{{ third.date }}</strong>
+            </p>
+
+
+            {% if third.status == "safe" %}
+
+            <div class="sessional-status">
+
+                <h3>🟢 Attendance is Safe</h3>
+
+                <p>
+                    You are currently above the
+                    {{ third.target_attendance }}% attendance requirement.
+                </p>
+
+            </div>
+
+            {% elif third.status == "recovery" %}
+
+            <div class="sessional-status">
+
+                <h3>🟡 Attendance Recovery Needed</h3>
+
+                <p>
+                    Your attendance is currently
+                    below {{ third.target_attendance }}%.
+                </p>
+
+                <p>
+                    You need to attend approximately
+                    <strong>
+                        {{ third.classes_needed_for_target }}
+                    </strong>
+                    consecutive classes to reach {{ third.target_attendance }}%.
+                </p>
+
+            </div>
+
+            {% else %}
+
+            <div class="sessional-status">
+
+                <h3>🔴 {{ third.target_attendance }}% Not Reachable</h3>
+
+                <p>
+                    Even if you attend every remaining
+                    class before this checkpoint, {{ third.target_attendance }}%
+                    cannot be reached.
+                </p>
+
+                <p>
+                    Maximum possible attendance:
+                    <strong>
+                        {{ third.maximum_possible_percentage }}%
+                    </strong>
+                </p>
+
+            </div>
+
+            {% endif %}
+
+
+            <!-- STARTING ATTENDANCE -->
+
+            <div class="attendance-flow">
+
+                <div class="flow-card">
+
+                    <span>Starting Attendance</span>
+
+                    <strong>
+                        {{ third.starting_attended }}
+                        /
+                        {{ third.starting_total }}
+                    </strong>
+
+                    <small>
+                        {{ third.starting_percentage }}%
+                    </small>
+
+                </div>
+
+                <div class="flow-arrow">
+                    →
+                </div>
+
+                <div class="flow-card">
+
+                    <span>Future Classes</span>
+
+                    <strong>
+                        {{ third.future_classes }}
+                    </strong>
+
+                    <small>
+                        {{ third.teaching_days }} teaching day(s)
+                    </small>
+
+                </div>
+
+            </div>
+
+
+            <!-- SAFE LEAVE -->
+
+            <div class="safe-leave-box">
+
+                <span>Maximum Safe Leave</span>
+
+                <strong>
+                    {{ third.maximum_leave_display }}
+                </strong>
+
+                <p>
+                    This is the maximum you can miss
+                    while staying at or above {{ third.target_attendance }}%.
+                </p>
+
+            </div>
+
+
+            <hr>
+
+
+            <!-- USER CHOICE -->
+
+            <h3>
+                How much leave will you take?
+            </h3>
+
+            <p>
+                Enter the leave you actually plan to take.
+            </p>
+
+
+            <form
+                action="/sessional-3"
+                method="POST"
+                data-maximum-classes="{{ third.maximum_leave_classes }}"
+                data-attended="{{ third.starting_attended }}"
+                data-total="{{ third.starting_total }}"
+                data-future="{{ third.future_classes }}"
+                onsubmit="normalizeLeaveInputs(this)">
+
+                <div class="leave-inputs">
+
+                    <div>
+
+                        <label for="leave_3_days">
+                            Days
+                        </label>
+
+                        <input
+                            type="number"
+                            id="leave_3_days"
+                            name="leave_3_days"
+                            min="0"
+                            value="0"
+                            required
+                        >
+
+                    </div>
+
+                    <div>
+
+                        <label for="leave_3_classes">
+                            Classes
+                        </label>
+
+                        <input
+                            type="number"
+                            id="leave_3_classes"
+                            name="leave_3_classes"
+                            min="0"
+                            value="0"
+                            required
+                        >
+
+                    </div>
+
+                </div>
+
+
+                <p class="leave-preview">
+
+                    Your leave:
+
+                    <strong id="leave_3_preview">
+                        0 class(es)
+                    </strong>
+
+                </p>
+
+
+                <!-- LIVE PROJECTION -->
+
+                <div class="projection-box">
+
+                    <span>
+                        At the checkpoint
+                    </span>
+
+                    <strong id="projection_3">
+                        {{ third.starting_attended }}
+                        /
+                        {{ third.starting_total + third.future_classes }}
+                        — projected attendance
+                    </strong>
+
+                    <p>
+                        This is your projected attendance
+                        at the Third Sessional.
+                    </p>
+
+                </div>
+
+
+                <button
+                    type="submit"
+                    class="attendance-button">
+
+                    Finish Attendance Plan
+
+                </button>
+
+            </form>
+
+        </div>
+
+    </div>
+
+    {% endif %}
+    </div>
+
+    {% if phase_1 or planner_loaded %}
+    <aside class="sessional-sidebar-column">
+        {% include "checkpoint_tracker.html" %}
+    </aside>
+    {% endif %}
+</div>
+{% elif calculator_step == 4 and (phase_1 or planner_loaded) %}
+<div class="sessional-step-4-wrap" id="scenario-result">
+    {% include "checkpoint_tracker.html" %}
+    <div class="scenario-result-reset-wrap" style="text-align: center; margin-top: 24px;">
+        <a href="/scenario/reset?scenario=sessional" class="result-card-reset-btn" title="Restart sessional planning from Step 1">
+            <span class="reset-icon">↺</span>
+            <span class="reset-text">Reset &amp; Plan Again</span>
+        </a>
+    </div>
+</div>
+{% endif %}

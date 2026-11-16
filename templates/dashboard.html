@@ -1,0 +1,1200 @@
+<!DOCTYPE html>
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+
+    <title>TEIN - Attendance</title>
+
+    <!-- PWA & Mobile Meta -->
+    <meta name="theme-color" content="#f59e0b">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-title" content="TEIN">
+    <link rel="manifest" href="/manifest.json">
+
+    <!-- Favicon & App Icons -->
+    <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='favicon.svg') }}">
+    <link rel="alternate icon" type="image/png" href="{{ url_for('static', filename='icon-192.png') }}">
+    <link rel="apple-touch-icon" href="{{ url_for('static', filename='apple-touch-icon.png') }}">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400&family=Plus+Jakarta+Sans:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='style.css') }}?v=6.3">
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='mobile.css') }}?v=1.7">
+
+</head>
+
+
+<body data-student-username="{{ profile.username if profile and profile.username else (session.get('portal_username') or '') }}">
+
+<!-- Universal Tactile Feedback Progress Beam -->
+<div id="app-top-progress" class="top-progress-bar"></div>
+
+<div class="container">
+
+
+
+
+    <!-- ================================= -->
+    <!-- HEADER -->
+    <!-- ================================= -->
+
+    <header class="dashboard-header">
+
+        <div>
+            <h1>TEIN</h1>
+            <p>Attendance Dashboard</p>
+        </div>
+
+        <div class="profile-menu">
+            <button
+                type="button"
+                class="profile-menu-trigger"
+                aria-label="Open account menu"
+                aria-expanded="false"
+                onclick="toggleProfileMenu(event)"
+            >
+                {% if profile.photo_url %}
+                <img
+                    class="profile-avatar"
+                    src="{{ url_for('profile_photo', v=profile.token[:8] if profile.token else None) }}"
+                    alt="Student profile photo"
+                    onerror="this.style.display='none'; if(this.nextElementSibling) this.nextElementSibling.style.display='inline-flex';"
+                >
+                <span class="profile-avatar profile-avatar-fallback" style="display:none;">👤</span>
+                {% else %}
+                <span class="profile-avatar profile-avatar-fallback">👤</span>
+                {% endif %}
+            </button>
+
+            <div class="profile-menu-panel" id="profile-menu-panel">
+                {% if profile.photo_url %}
+                <img
+                    class="profile-menu-photo"
+                    src="{{ url_for('profile_photo', v=profile.token[:8] if profile.token else None) }}"
+                    alt=""
+                    onerror="this.style.display='none'; if(this.nextElementSibling) this.nextElementSibling.style.display='inline-flex';"
+                >
+                <span class="profile-menu-photo profile-avatar-fallback" style="display:none;">👤</span>
+                {% else %}
+                <span class="profile-menu-photo profile-avatar-fallback">👤</span>
+                {% endif %}
+
+                <div class="profile-menu-identity">
+                    <strong>{{ profile.username or "Student" }}</strong>
+                    <span>NIET Student</span>
+                </div>
+
+                <div class="profile-menu-divider"></div>
+
+                <button
+                    type="button"
+                    class="profile-menu-action pwa-install-action"
+                    id="pwa-install-btn"
+                    onclick="installPwaApp()"
+                    style="display:none;"
+                >
+                    <span>📲</span>
+                    <span>Install App</span>
+                </button>
+
+                <form action="/logout" method="POST" onsubmit="try { if (window.TeinLibrary) { TeinLibrary.clearAll(); } localStorage.removeItem('bunku_custom_teaching_days'); } catch(e){}">
+                    <button
+                        type="submit"
+                        class="profile-menu-action logout"
+                        onclick="return confirm('Log out of TEIN?');"
+                    >
+                        <span>↪</span>
+                        <span>Log out</span>
+                    </button>
+                </form>
+            </div>
+        </div>
+
+    </header>
+
+    <!-- Offline Mode Live Indicator -->
+    <div id="offline-status-banner" class="offline-status-banner" role="status" aria-live="polite">
+        <div class="offline-banner-content">
+            <span class="offline-banner-icon">📶</span>
+            <span class="offline-banner-text" id="offline-banner-text">Offline Mode · Showing last synced attendance</span>
+        </div>
+    </div>
+
+
+    {% if attendance.subjects %}
+
+    <nav class="page-nav" aria-label="Main navigation">
+
+        <a href="/" class="{% if page == 'home' %}active{% endif %}">
+            Home
+        </a>
+
+        <a href="/what-if" class="{% if page == 'what_if' %}active{% endif %}">
+            What-If
+        </a>
+
+        <a href="/subjects" class="{% if page == 'subjects' %}active{% endif %}">
+            Subject Attendance
+        </a>
+
+        <a href="/clubs" class="{% if page == 'clubs' %}active{% endif %}">
+            Clubs
+        </a>
+
+        <a href="/events" class="{% if page == 'events' %}active{% endif %}">
+            Events
+        </a>
+
+    </nav>
+
+    {% endif %}
+
+
+    <!-- ================================= -->
+    <!-- PORTAL ACCESS / LOGIN / RE-AUTH -->
+    <!-- ================================= -->
+
+    {% if not attendance.subjects or portal_error %}
+
+    <div
+        class="summary"
+        id="login-section">
+
+        {% if portal_error == "unavailable" %}
+        <div class="portal-error-card unavailable">
+            <div class="portal-error-header">
+                <span class="portal-error-icon">⚠️</span>
+                <div>
+                    <h3 class="portal-error-title">College Portal Unavailable</h3>
+                    <p class="portal-error-desc">TEIN could not reach the NIET portal right now. You can try signing in below or check back in a few minutes.</p>
+                </div>
+            </div>
+        </div>
+        {% elif portal_error == "login" %}
+        <div class="portal-error-card login-failed">
+            <div class="portal-error-header">
+                <span class="portal-error-icon">❌</span>
+                <div>
+                    <h3 class="portal-error-title">Login Failed</h3>
+                    <p class="portal-error-desc">Incorrect college username or password. Please verify your ERP credentials and try again.</p>
+                </div>
+            </div>
+        </div>
+        {% elif portal_error == "expired" %}
+        <div class="portal-error-card expired">
+            <div class="portal-error-header">
+                <span class="portal-error-icon">⏱️</span>
+                <div>
+                    <h3 class="portal-error-title">College Session Expired</h3>
+                    <p class="portal-error-desc">Your portal session timed out due to inactivity. Enter your password below to continue on {{ 'What-If Planner' if page == 'what_if' else ('Subjects Overview' if page == 'subjects' else 'TEIN') }}.</p>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <span class="what-if-kicker">PORTAL ACCESS</span>
+        <h2>Sign in to NIET Portal</h2>
+
+        <form
+            action="/get-attendance"
+            method="POST"
+            class="login-auth-form"
+            onsubmit="return handleLoginSubmit(event)">
+
+            <input type="hidden" name="next" value="{{ page or 'home' }}">
+
+            <div id="manual-login-fields" class="login-fields-wrapper">
+                <label class="login-field-label">College ERP ID / Username</label>
+                <div class="email-field-shell">
+                    <input
+                        type="text"
+                        id="manual-username"
+                        placeholder="e.g. 02xxcdsdxxx"
+                        autocomplete="username"
+                        required
+                        value="{{ (profile.username.split('@')[0]) if profile.username else '' }}"
+                        oninput="updateManualEmailPreview()"
+                    >
+                    <span id="manual-email-domain">@niet.co.in</span>
+                </div>
+            </div>
+
+            <input
+                type="hidden"
+                name="username"
+                id="manual-username-input"
+                value="{{ profile.username if profile.username else '' }}"
+            >
+
+            <div class="login-fields-wrapper">
+                <label class="login-field-label">Portal Password</label>
+                <div class="password-field-shell">
+                    <input
+                        type="password"
+                        id="portal-password-input"
+                        name="password"
+                        placeholder="Enter college ERP password"
+                        autocomplete="current-password"
+                        required
+                    >
+                    <button
+                        type="button"
+                        class="password-toggle-btn"
+                        id="password-toggle-btn"
+                        aria-label="Show password"
+                        title="Show password"
+                        onclick="togglePasswordVisibility()"
+                    >
+                        <svg class="eye-icon-show" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                            <circle cx="12" cy="12" r="3"></circle>
+                        </svg>
+                        <svg class="eye-icon-hide" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none;">
+                            <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
+                            <line x1="1" y1="1" x2="23" y2="23"></line>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+
+            <div class="login-remember-row">
+                <label class="switch-toggle" for="remember-me-checkbox" aria-label="Toggle keep me signed in">
+                    <input type="checkbox" id="remember-me-checkbox" name="remember_me" value="true" checked>
+                    <span class="switch-slider"></span>
+                </label>
+                <label for="remember-me-checkbox" class="switch-label">
+                    Keep me signed in <span class="switch-sublabel">(7 days)</span>
+                </label>
+            </div>
+
+            <button
+                type="submit"
+                class="attendance-button login-submit-btn"
+                id="get-attendance-button">
+                Sign in & Retrieve Attendance
+            </button>
+
+            <p id="login-error" class="login-error-msg" style="display:none;"></p>
+
+        </form>
+
+    </div>
+
+
+    <!-- ================================= -->
+    <!-- LOADING -->
+    <!-- ================================= -->
+
+    <!-- ================================= -->
+    <!-- INTERACTIVE 3D MAGNETIC PASS LOADING SCREEN -->
+    <!-- ================================= -->
+
+    <style>
+        .loading-screen {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 22px;
+            text-align: center;
+            padding: 36px 20px 42px;
+            min-height: 420px;
+            width: 100%;
+            box-sizing: border-box;
+            background: #ffffff;
+            border-radius: 22px;
+            border: 1px solid rgba(231, 226, 217, 0.9);
+            box-shadow: 0 8px 32px rgba(120, 113, 108, 0.08);
+            perspective: 1000px;
+            animation: fadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        /* 3D Card Stage */
+        .magnetic-card-viewport {
+            width: 100%;
+            max-width: 350px;
+            height: 200px;
+            perspective: 900px;
+            cursor: grab;
+            user-select: none;
+            touch-action: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .magnetic-card-viewport:active {
+            cursor: grabbing;
+        }
+
+        .magnetic-card {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            border-radius: 18px;
+            background: linear-gradient(135deg, #1c1917 0%, #292524 60%, #44403c 100%);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            box-shadow:
+                0 18px 36px -10px rgba(28, 25, 23, 0.35),
+                0 0 0 1px rgba(245, 158, 11, 0.2);
+            padding: 22px 24px;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            transform-style: preserve-3d;
+            transition: transform 0.12s cubic-bezier(0.2, 0.8, 0.4, 1), box-shadow 0.2s ease;
+            overflow: hidden;
+        }
+
+        /* Holographic Dynamic Specular Sheen */
+        .magnetic-card-glare {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            border-radius: inherit;
+            background: radial-gradient(
+                circle at var(--glare-x, 50%) var(--glare-y, 50%),
+                rgba(254, 243, 199, 0.32) 0%,
+                rgba(245, 158, 11, 0.1) 35%,
+                transparent 70%
+            );
+            pointer-events: none;
+            mix-blend-mode: overlay;
+            transition: opacity 0.2s ease;
+            opacity: 0.85;
+        }
+
+        .magnetic-card-chip {
+            width: 36px;
+            height: 26px;
+            border-radius: 6px;
+            background: linear-gradient(135deg, #fef3c7 0%, #d97706 100%);
+            border: 1px solid rgba(245, 158, 11, 0.6);
+            box-shadow: inset 0 1px 2px rgba(255, 255, 255, 0.6);
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            padding: 3px;
+            gap: 2px;
+            opacity: 0.9;
+        }
+
+        .magnetic-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transform: translateZ(24px);
+        }
+
+        .magnetic-card-brand {
+            font-family: 'Newsreader', Georgia, serif;
+            font-size: 20px;
+            font-weight: 600;
+            color: #ffffff;
+            letter-spacing: -0.02em;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .magnetic-card-body {
+            transform: translateZ(30px);
+            text-align: left;
+        }
+
+        .magnetic-card-id-label {
+            font-size: 10px;
+            font-weight: 700;
+            color: #a8a29e;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            margin-bottom: 3px;
+        }
+
+        .magnetic-card-id {
+            font-family: 'Plus Jakarta Sans', monospace;
+            font-size: 16px;
+            font-weight: 750;
+            color: #fef3c7;
+            letter-spacing: 0.05em;
+        }
+
+        .magnetic-card-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            transform: translateZ(20px);
+        }
+
+        .magnetic-card-status-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(245, 158, 11, 0.15);
+            border: 1px solid rgba(245, 158, 11, 0.35);
+            border-radius: 999px;
+            padding: 3px 9px;
+            font-size: 11px;
+            font-weight: 650;
+            color: #fef3c7;
+        }
+
+        .magnetic-card-pulse-dot {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: #22c55e;
+            box-shadow: 0 0 8px #22c55e;
+            animation: pulseDot 1.5s ease-in-out infinite;
+        }
+
+        .magnetic-card-hint {
+            font-size: 11px;
+            font-weight: 500;
+            color: #a8a29e;
+        }
+
+        /* Loading stage info */
+        .loading-copy {
+            width: 100%;
+            max-width: 360px;
+        }
+
+        .loading-copy h2 {
+            margin: 0 0 6px;
+            font-family: 'Newsreader', Georgia, serif;
+            font-size: 22px;
+            font-weight: 600;
+            color: #1c1917;
+            letter-spacing: -0.015em;
+        }
+
+        .loading-copy p {
+            margin: 0 0 16px;
+            color: #78716c;
+            font-size: 13.5px;
+            min-height: 20px;
+        }
+
+        .loading-progress-bar {
+            width: 100%;
+            height: 6px;
+            background: #fef3c7;
+            border-radius: 999px;
+            overflow: hidden;
+            position: relative;
+            box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.06);
+        }
+
+        .loading-progress-fill {
+            height: 100%;
+            width: 25%;
+            background: linear-gradient(90deg, #f59e0b 0%, #d97706 60%, #b45309 100%);
+            border-radius: 999px;
+            position: relative;
+            overflow: hidden;
+            transition: width 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+            box-shadow: 0 0 10px rgba(245, 158, 11, 0.5);
+        }
+
+        /* Continuous Kinetic Shimmer: Never freezes or looks stuck */
+        .loading-progress-fill::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            right: 0;
+            background: linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.7) 50%, transparent 100%);
+            animation: progressStreamPulse 1.2s infinite cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        @keyframes progressStreamPulse {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+
+        @keyframes pulseDot {
+            0%, 100% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.35); opacity: 0.7; }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+
+    <div id="loading-screen" class="loading-screen">
+
+        <!-- 3D Magnetic Card -->
+        <div class="magnetic-card-viewport" id="magnetic-card-viewport">
+            <div class="magnetic-card" id="magnetic-card">
+                <div class="magnetic-card-glare" id="magnetic-card-glare"></div>
+
+                <div class="magnetic-card-header">
+                    <span class="magnetic-card-brand">TEIN · NIET</span>
+                    <div class="magnetic-card-chip"></div>
+                </div>
+
+                <div class="magnetic-card-body">
+                    <div class="magnetic-card-id-label">STUDENT ERP SESSION</div>
+                    <div class="magnetic-card-id" id="magnetic-card-user-id">02XXCDSDXXX</div>
+                </div>
+
+                <div class="magnetic-card-footer">
+                    <div class="magnetic-card-status-pill">
+                        <span class="magnetic-card-pulse-dot"></span>
+                        <span id="magnetic-card-status-text">Connecting...</span>
+                    </div>
+                    <span class="magnetic-card-hint">Touch & tilt</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="loading-copy">
+            <h2 id="loading-stage-title">Connecting to NIET Portal...</h2>
+            <p id="loading-stage-desc">Securing connection and initializing session</p>
+            <div class="loading-progress-bar">
+                <div class="loading-progress-fill" id="loading-progress-fill"></div>
+            </div>
+        </div>
+
+    </div>
+
+
+    <!-- ================================= -->
+    <!-- NORMAL DASHBOARD -->
+    <!-- ================================= -->
+
+    {% else %}
+
+
+    <!-- ================================= -->
+    {% if page == "home" %}
+
+    <!-- CURRENT ATTENDANCE -->
+
+    <!-- Dynamic Baran Animated Sunset Campus Hero Banner -->
+    <div class="campus-sunset-banner">
+        <div class="campus-sunset-media">
+            <img src="/static/characters/campus_sunset.webp" alt="Sunset Campus" class="campus-sunset-bg">
+            <div class="campus-sunset-overlay"></div>
+            <div class="campus-sunset-particles" aria-hidden="true">
+                <span class="petal petal-1">🌸</span>
+                <span class="petal petal-2">✨</span>
+                <span class="petal petal-3">🍃</span>
+                <span class="petal petal-4">🌸</span>
+                <span class="petal petal-5">✨</span>
+            </div>
+        </div>
+        <div class="campus-sunset-content">
+            <div class="campus-sunset-text">
+                <span class="campus-sunset-kicker">NIET CAMPUS · GOLDEN HOUR</span>
+                <h1 class="campus-sunset-title">Hey! Ready to navigate attendance?</h1>
+                <p class="campus-sunset-sub">Plan smart, stay above 75%, and enjoy college life with zero stress.</p>
+            </div>
+            <div class="campus-sunset-character-wrap">
+                <img src="/static/characters/hero_bhaiya.webp" alt="Bunku Bhaiya Character" class="campus-mascot-sticker character-bhaiya">
+            </div>
+        </div>
+    </div>
+
+    <div class="summary">
+        <div class="summary-header-row">
+            <h2>Your Attendance</h2>
+            <div class="summary-header-actions">
+                <button type="button" class="attendance-sync-btn" id="attendance-sync-btn" onclick="refreshLiveAttendance()" title="Sync live attendance with NIET ERP">
+                    <span class="sync-icon">🔄</span>
+                    <span class="sync-label">Sync Live</span>
+                </button>
+                {% if is_portal_session_active %}
+                <div class="attendance-status-badge active" id="attendance-session-badge" title="Live portal session is connected and active">
+                    <span class="status-badge-dot"></span>
+                    <span class="status-badge-text">Session Active</span>
+                </div>
+                {% else %}
+                <button type="button" class="attendance-status-badge expired" id="attendance-session-badge" onclick="openQuickReloginModal()" title="ERP session expired. Tap to reconnect with college portal without leaving this page">
+                    <span class="status-badge-dot expired"></span>
+                    <span class="status-badge-text">Session Expired · Reconnect</span>
+                </button>
+                {% endif %}
+            </div>
+        </div>
+
+        {% if phase_1 %}
+
+        <div class="stats">
+
+            <div class="stat-card overall" id="stat-card-site">
+                <span>College Site Attendance</span>
+                <strong id="stat-site-pct">{{ phase_1.site_percentage }}%</strong>
+                <small id="stat-site-count">
+                    {{ phase_1.site_attended }} /
+                    {{ phase_1.site_total }}
+                </small>
+            </div>
+
+            <div class="stat-card" id="stat-card-unmarked">
+                <span>Freeze / Unmarked Classes</span>
+                <strong id="stat-unmarked-count">{{ phase_1.unmarked_classes }}</strong>
+                <small>Already held, not yet posted</small>
+            </div>
+
+            <div class="stat-card overall" id="stat-card-effective">
+                <div class="stat-card-header">
+                    <span>Effective Attendance</span>
+                    <span id="stat-effective-indicator" class="safe-indicator {% if phase_1.effective_percentage >= 75 %}safe{% else %}warning{% endif %}">
+                        {% if phase_1.effective_percentage >= 75 %}✓ Safe &ge; 75%{% else %}⚠ Need Recovery{% endif %}
+                    </span>
+                </div>
+                <strong id="stat-effective-pct">{{ phase_1.effective_percentage }}%</strong>
+                <div class="stat-card-footer-row">
+                    <small id="stat-effective-count">{{ phase_1.effective_attended }} / {{ phase_1.effective_total }} classes</small>
+                    {% if phase_1.effective_total > 0 %}
+                        {% if phase_1.effective_percentage >= 75 %}
+                            {% set eff_margin = ((phase_1.effective_attended - 0.75 * phase_1.effective_total) / 0.75)|int %}
+                            <span id="stat-effective-margin-pill" class="stat-margin-pill safe" title="Classes you can skip while remaining above 75%">{{ eff_margin }} can skip</span>
+                        {% else %}
+                            {% set eff_needed = ((0.75 * phase_1.effective_total - phase_1.effective_attended) / 0.25)|round(0, 'ceil')|int %}
+                            <span id="stat-effective-margin-pill" class="stat-margin-pill danger" title="Classes needed consecutively to reach 75%">Need +{{ eff_needed }}</span>
+                        {% endif %}
+                    {% else %}
+                        <span id="stat-effective-margin-pill" class="stat-margin-pill safe" style="display:none;"></span>
+                    {% endif %}
+                </div>
+            </div>
+
+        </div>
+
+        {% else %}
+
+        <div class="stats">
+
+            <div class="stat-card overall" id="stat-card-site">
+                <span>College Site Attendance</span>
+                <strong id="stat-site-pct">{{ current_state.site.percentage }}%</strong>
+                <small id="stat-site-count">
+                    {{ current_state.site.present }} /
+                    {{ current_state.site.total }}
+                </small>
+            </div>
+
+            <div class="stat-card" id="stat-card-unmarked">
+                <span>Freeze / Unmarked Classes</span>
+                <strong id="stat-unmarked-count">{{ current_state.unmarked }}</strong>
+                <small>Already held, not yet posted</small>
+            </div>
+
+            <div class="stat-card overall" id="stat-card-effective">
+                <div class="stat-card-header">
+                    <span>Effective Attendance</span>
+                    <span id="stat-effective-indicator" class="safe-indicator {% if current_state.effective.percentage >= 75 %}safe{% else %}warning{% endif %}">
+                        {% if current_state.effective.percentage >= 75 %}✓ Safe &ge; 75%{% else %}⚠ Need Recovery{% endif %}
+                    </span>
+                </div>
+                <strong id="stat-effective-pct">{{ current_state.effective.percentage }}%</strong>
+                <div class="stat-card-footer-row">
+                    <small id="stat-effective-count">{{ current_state.effective.present }} / {{ current_state.effective.total }} classes</small>
+                    {% if current_state.effective.total > 0 %}
+                        {% if current_state.effective.percentage >= 75 %}
+                            {% set eff_margin = ((current_state.effective.present - 0.75 * current_state.effective.total) / 0.75)|int %}
+                            <span id="stat-effective-margin-pill" class="stat-margin-pill safe" title="Classes you can skip while remaining above 75%">{{ eff_margin }} can skip</span>
+                        {% else %}
+                            {% set eff_needed = ((0.75 * current_state.effective.total - current_state.effective.present) / 0.25)|round(0, 'ceil')|int %}
+                            <span id="stat-effective-margin-pill" class="stat-margin-pill danger" title="Classes needed consecutively to reach 75%">Need +{{ eff_needed }}</span>
+                        {% endif %}
+                    {% else %}
+                        <span id="stat-effective-margin-pill" class="stat-margin-pill safe" style="display:none;"></span>
+                    {% endif %}
+                </div>
+            </div>
+
+        </div>
+        {% endif %}
+
+    </div>
+
+
+    <!-- TODAY'S ATTENDANCE -->
+    <div class="summary today-attendance-card" id="today-attendance-card">
+        <div class="today-attendance-heading">
+            <div>
+                <h2>Daily Journey</h2>
+                <span class="journey-date-badge" id="journey-date-badge">Select a day</span>
+            </div>
+            <div class="journey-segmented-nav" role="tablist">
+                <button type="button" class="journey-tab active" id="tab-journey-today" onclick="loadTodayAttendance()">
+                    Today
+                </button>
+                <button type="button" class="journey-tab" id="tab-journey-previous" onclick="loadPreviousTeachingDay()">
+                    Previous Day
+                </button>
+            </div>
+        </div>
+
+        <div id="today-attendance-result" class="today-attendance-result" hidden>
+            <div class="today-attendance-stats">
+                <strong id="today-present-count">0 Present</strong>
+                <span>·</span>
+                <strong id="today-absent-count">0 Absent</strong>
+                <span>·</span>
+                <strong id="today-remaining-count">0 Remaining</strong>
+            </div>
+
+            <button type="button" class="today-attendance-details-toggle"
+                    id="today-attendance-details-toggle"
+                    onclick="toggleTodayAttendanceDetails()">
+                View journey details
+            </button>
+
+            <div id="today-attendance-details" class="today-attendance-details"></div>
+        </div>
+
+        <div id="today-attendance-error" class="today-attendance-error" hidden></div>
+    </div>
+
+    {% endif %}
+
+
+    {% if page == "what_if" %}
+
+    {% include "what_if.html" %}
+
+    {% endif %}
+
+
+
+
+    {% if page == "subjects" %}
+
+    <!-- SUBJECT ATTENDANCE -->
+    <!-- ================================= -->
+
+    <div class="summary subject-attendance-header-card">
+        <div class="subject-header-main">
+            <div class="subject-header-title-row">
+                <div>
+                    <span class="what-if-kicker">ACADEMICS</span>
+                    <h2>Subject Attendance</h2>
+                </div>
+                <button type="button" class="attendance-sync-btn" id="attendance-sync-btn-subjects" onclick="refreshLiveAttendance()" title="Sync live attendance with NIET ERP">
+                    <span class="sync-icon">🔄</span>
+                    <span class="sync-label">Sync Live</span>
+                </button>
+            </div>
+            {% if attendance.subjects %}
+            {% set total_subs = attendance.subjects|length %}
+            {% set safe_count = namespace(val=0) %}
+            {% set danger_count = namespace(val=0) %}
+            {% for s in attendance.subjects %}
+                {% if s.get("percentageOfLec", 0)|float >= 75 %}
+                    {% set safe_count.val = safe_count.val + 1 %}
+                {% else %}
+                    {% set danger_count.val = danger_count.val + 1 %}
+                {% endif %}
+            {% endfor %}
+            <div class="subject-health-summary-pills" role="tablist" aria-label="Subject attendance filter">
+                <button type="button" class="subject-summary-pill total active" data-subject-filter="all" onclick="filterOverviewSubjects('all', this)" title="Show all subjects">{{ total_subs }} subjects</button>
+                <button type="button" class="subject-summary-pill safe" data-subject-filter="safe" onclick="filterOverviewSubjects('safe', this)" title="Show subjects with safe attendance (>=75%)">{{ safe_count.val }} safe (&ge;75%)</button>
+                {% if danger_count.val > 0 %}
+                <button type="button" class="subject-summary-pill danger" data-subject-filter="danger" onclick="filterOverviewSubjects('danger', this)" title="Show subjects that need recovery (<75%)">{{ danger_count.val }} need recovery</button>
+                {% endif %}
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+
+    <!-- Live Subject Search & Status Bar -->
+    <div class="subject-search-bar-wrap">
+        <div class="subject-search-input-box">
+            <span class="subject-search-icon">🔍</span>
+            <input
+                type="text"
+                id="subject-search-input"
+                class="subject-search-input"
+                placeholder="Search subject or code (e.g. BCS501, Operating Systems)..."
+                oninput="onSubjectSearchInput(this.value)"
+                autocomplete="off"
+                spellcheck="false"
+            >
+            <button
+                type="button"
+                id="subject-search-clear"
+                class="subject-search-clear"
+                onclick="clearSubjectSearch()"
+                style="display:none;"
+                title="Clear search"
+            >✕</button>
+        </div>
+        <span class="subject-match-count" id="subject-match-count" style="display:none;"></span>
+    </div>
+
+    <div class="mobile-table-scroll-hint" aria-hidden="true">⇄ Swipe table to view all metrics</div>
+
+    <div class="table-container subject-overview-table-wrap">
+
+        <table class="subject-overview-table">
+
+            <thead>
+
+                <tr>
+
+                    <th>Subject</th>
+                    <th>Code</th>
+                    <th>Present</th>
+                    <th>Absent</th>
+                    <th>Total</th>
+                    <th>Percentage</th>
+                    <th>Status / Margin</th>
+                    <th>Faculty</th>
+
+                </tr>
+
+            </thead>
+
+            <tbody>
+
+            <tr id="subject-no-matches-row" style="display:none;">
+                <td colspan="8" style="text-align:center; padding:32px; color:#64748b;">
+                    No subjects match your search or filter.
+                </td>
+            </tr>
+
+            {% for subject in attendance.subjects %}
+                {% set attended = subject.get("attendedLecture", 0)|int %}
+                {% set absent = subject.get("absentLecture", 0)|int %}
+                {% set total = attended + absent %}
+                {% set pct = subject.get("percentageOfLec", 0)|float %}
+                <tr class="subject-attendance-row"
+                    data-subject-index="{{ loop.index0 }}"
+                    data-subject-name="{{ (subject.get('subjectName') or '')|lower }}"
+                    data-subject-code="{{ (subject.get('subjectCode') or '')|lower }}"
+                    data-subject-status="{% if pct >= 75 %}safe{% else %}danger{% endif %}"
+                    onclick="showSubjectAttendance({{ loop.index0 }})"
+                    style="cursor:pointer;"
+                >
+
+                    <td class="subject-name-cell">
+                        <strong>{{ subject.get("subjectName", "Unknown") }}</strong>
+                    </td>
+
+                    <td>
+                        <span class="subject-code-tag">{{ subject.get("subjectCode", "-") }}</span>
+                    </td>
+
+                    <td class="count-present">{{ attended }}</td>
+
+                    <td class="count-absent">{{ absent }}</td>
+
+                    <td class="count-total">{{ total }}</td>
+
+                    <td>
+                        <div class="subject-pct-wrap">
+                            <strong>{{ "%.1f"|format(pct) }}%</strong>
+                            <div class="subject-mini-meter">
+                                <div class="subject-mini-meter-fill {% if pct >= 75 %}safe{% elif pct >= 70 %}warning{% else %}danger{% endif %}"
+                                     style="width: {{ [pct, 100]|min }}%;"></div>
+                            </div>
+                        </div>
+                    </td>
+
+                    <td>
+                        {% if total == 0 %}
+                            <span class="margin-badge neutral">No classes</span>
+                        {% elif pct >= 75 %}
+                            {% set margin = ((attended - 0.75 * total) / 0.75)|int %}
+                            <span class="margin-badge safe" title="Can safely skip {{ margin }} classes while staying >= 75%">
+                                ✓ Safe · {{ margin }} can skip
+                            </span>
+                        {% else %}
+                            {% set needed = ((0.75 * total - attended) / 0.25)|round(0, 'ceil')|int %}
+                            <span class="margin-badge danger" title="Need to attend {{ needed }} consecutive classes to reach 75%">
+                                ✕ Low · Need +{{ needed }}
+                            </span>
+                        {% endif %}
+                    </td>
+
+                    <td class="faculty-cell">
+                        {{ subject.get("facultyName", "-") }}
+                    </td>
+
+                </tr>
+
+            {% endfor %}
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+
+    <!-- ================================= -->
+    <!-- SELECTED SUBJECT ATTENDANCE DETAILS -->
+    <!-- ================================= -->
+
+    <div id="subject-attendance-details" style="display:none; margin-top:32px;">
+
+        {% for detail in attendance.subject_details %}
+
+        <div
+            class="subject-detail-panel"
+            data-subject-detail="{{ loop.index0 }}"
+            style="display:none;"
+        >
+
+            <div class="summary subject-detail-header" style="margin-bottom:16px;">
+                <div class="subject-detail-heading-row">
+                    <div>
+                        <span class="what-if-kicker">LECTURE LOGS</span>
+                        <h2>{{ detail.subject_name }}</h2>
+                    </div>
+                    <button type="button" class="subject-detail-close-btn" onclick="closeSubjectDetails()">
+                        ✕ Close log
+                    </button>
+                </div>
+            </div>
+
+            {% if detail.records %}
+
+            <div class="subject-attendance-filter" role="group" aria-label="Attendance filter">
+
+                <button
+                    type="button"
+                    class="subject-filter-button active"
+                    data-filter="all"
+                    onclick="filterSubjectAttendance(this, 'all')"
+                >
+                    All <span>{{ detail.records|length }}</span>
+                </button>
+
+                <button
+                    type="button"
+                    class="subject-filter-button"
+                    data-filter="present"
+                    onclick="filterSubjectAttendance(this, 'present')"
+                >
+                    Present <span data-filter-count="present">0</span>
+                </button>
+
+                <button
+                    type="button"
+                    class="subject-filter-button"
+                    data-filter="absent"
+                    onclick="filterSubjectAttendance(this, 'absent')"
+                >
+                    Absent <span data-filter-count="absent">0</span>
+                </button>
+
+            </div>
+
+            <div class="table-container">
+
+                <table>
+
+                    <thead>
+
+                        <tr>
+                            <th>Sr. No.</th>
+                            <th>Date</th>
+                            <th>Lecture Time</th>
+                            <th>Session</th>
+                            <th>Status</th>
+                        </tr>
+
+                    </thead>
+
+                    <tbody>
+
+                        {% for record in detail.records %}
+
+                        <tr
+                            data-attendance-status="{{ record.get('presenty', '')|lower|trim }}"
+                            data-attendance-row
+                        >
+
+                            <td>{{ loop.index }}</td>
+
+                            <td>{{ record.get("Date", "") }}</td>
+
+                            <td>
+                                {{ record.get("stime", "") }}
+                                -
+                                {{ record.get("etime", "") }}
+                            </td>
+
+                            <td>{{ record.get("sessionNo", "-") }}</td>
+
+                            <td>
+                                {% set status_val = record.get("presenty", "")|lower|trim %}
+                                {% if status_val in ['p', 'present'] or 'present' in status_val %}
+                                <span class="badge-pill badge-pill-present">Present</span>
+                                {% elif status_val in ['a', 'absent'] or 'absent' in status_val %}
+                                <span class="badge-pill badge-pill-absent">Absent</span>
+                                {% else %}
+                                <span class="badge-pill badge-pill-unmarked">{{ record.get("presenty", "Unmarked") }}</span>
+                                {% endif %}
+                            </td>
+
+                        </tr>
+
+                        {% endfor %}
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+            {% else %}
+
+            <p>No attendance details were returned for this subject.</p>
+
+            {% endif %}
+
+        </div>
+
+        {% endfor %}
+
+    </div>
+
+    <!-- ================================= -->
+    <!-- DAILY ARCHIVE: ATTENDANCE BY DATE -->
+    <!-- ================================= -->
+
+    <div class="summary date-attendance-card" id="attendance-by-date">
+        <span class="what-if-kicker">DAILY ARCHIVE</span>
+        <h2>Attendance by Date</h2>
+        <div class="date-attendance-controls">
+            <label for="attendance-history-date">Select date</label>
+            <input id="attendance-history-date" type="date" max="{{ today_date }}" value="{{ today_date }}">
+            <button type="button" class="attendance-button" id="load-attendance-date" onclick="loadAttendanceByDate()">Load date</button>
+        </div>
+        <p class="date-attendance-message" id="attendance-date-message" role="status" aria-live="polite">Select a date and load its attendance.</p>
+        <div id="attendance-date-results" hidden>
+            <p class="date-attendance-selected" id="attendance-date-heading"></p>
+            <div class="date-attendance-summary" id="attendance-date-summary"></div>
+            <div class="table-container date-attendance-table-wrap">
+                <table>
+                    <thead>
+                        <tr><th>Subject</th><th>Code</th><th>Status</th><th>Present</th><th>Absent</th><th>Unmarked</th><th>Classes</th></tr>
+                    </thead>
+                    <tbody id="attendance-date-rows"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+
+
+
+    {% endif %}
+
+
+    {% endif %}
+
+</div>
+
+
+<!-- ================================= -->
+<!-- QUICK PORTAL RECONNECT MODAL -->
+<!-- ================================= -->
+<div id="quick-reconnect-modal" class="tein-modal-backdrop" hidden>
+    <div class="tein-modal-card" role="dialog" aria-modal="true" aria-labelledby="quick-reconnect-title">
+        <div class="tein-modal-header">
+            <div class="tein-modal-icon-badge">🔒</div>
+            <div class="tein-modal-titles">
+                <h3 id="quick-reconnect-title" class="tein-modal-title">Reconnect NIET Portal</h3>
+                <p class="tein-modal-sub">Your live ERP session timed out. Re-authenticate to sync live attendance without losing your place.</p>
+            </div>
+            <button type="button" class="tein-modal-close" onclick="closeQuickReloginModal()" aria-label="Close modal">✕</button>
+        </div>
+
+        <form id="quick-reconnect-form" onsubmit="handleQuickReconnect(event)">
+            <div class="tein-modal-field">
+                <label for="reconnect-username-input">Student Roll Number / Username</label>
+                <input type="text" id="reconnect-username-input" name="username" readonly class="tein-modal-input-readonly">
+            </div>
+
+            <div class="tein-modal-field">
+                <div class="tein-modal-field-header">
+                    <label for="reconnect-password-input">Portal Password</label>
+                    <button type="button" class="toggle-pwd-btn" onclick="toggleReconnectPasswordVisibility()" aria-label="Toggle password visibility">👁️ Show</button>
+                </div>
+                <input type="password" id="reconnect-password-input" name="password" placeholder="Enter college ERP password" required autocomplete="current-password" class="tein-modal-input">
+            </div>
+
+            <div class="login-remember-row" style="margin: 10px 0 16px 2px;">
+                <label class="switch-toggle" for="reconnect-remember-me" aria-label="Toggle keep me signed in">
+                    <input type="checkbox" id="reconnect-remember-me" name="remember_me" value="true" checked>
+                    <span class="switch-slider"></span>
+                </label>
+                <label for="reconnect-remember-me" class="switch-label">
+                    Keep me signed in
+                    <span class="switch-sublabel">(Remember on this device)</span>
+                </label>
+            </div>
+
+            <div id="quick-reconnect-error" class="tein-modal-error" style="display: none;"></div>
+
+            <div class="tein-modal-actions">
+                <button type="submit" id="quick-reconnect-submit-btn" class="attendance-button" style="width: 100%; min-height: 44px;">
+                    ⚡ Unlock &amp; Sync Live
+                </button>
+            </div>
+
+            <div class="tein-modal-footer">
+                <a href="/login?reason=expired" class="tein-modal-switch-link">Or sign in on the full login page →</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- ================================= -->
+<!-- JAVASCRIPT -->
+<!-- ================================= -->
+
+    <script src="{{ url_for('static', filename='js/dashboard.js') }}?v=5.8"></script>
+
+    {% if attendance.subjects %}
+    <nav class="mobile-bottom-nav" aria-label="Mobile navigation">
+        <a href="/" class="mobile-nav-link {% if page == 'home' %}active{% endif %}">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+            <span>Home</span>
+        </a>
+        <a href="/what-if" class="mobile-nav-link {% if page == 'what_if' %}active{% endif %}">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+            <span>What-If</span>
+        </a>
+        <a href="/subjects" class="mobile-nav-link {% if page == 'subjects' %}active{% endif %}">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z"/><path d="M6 6h10M6 10h10"/></svg>
+            <span>Subjects</span>
+        </a>
+        <a href="/clubs" class="mobile-nav-link {% if page == 'clubs' %}active{% endif %}">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+            <span>Clubs</span>
+        </a>
+        <a href="/events" class="mobile-nav-link {% if page == 'events' %}active{% endif %}">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+            <span>Events</span>
+        </a>
+    </nav>
+    {% endif %}
+
+</body>
+
+</html>
